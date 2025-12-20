@@ -16,6 +16,7 @@ export default function RootLayout({
     <html lang="ru">
       <body
         className={`antialiased bg-background`}
+        suppressHydrationWarning 
       >
         <Header />
         {children}
