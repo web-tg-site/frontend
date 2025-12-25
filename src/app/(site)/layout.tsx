@@ -1,6 +1,16 @@
 import type { Metadata } from "next";
+import { Onest } from "next/font/google";
 import "@/shared/styles/globals.css";
 import { Header } from "@/widgets/header";
+import { Footer } from "@/widgets/footer";
+import { GlobalCollectionModal } from "@/features/modal-collection/ui/global-collection-modal";
+
+const onest = Onest({
+  subsets: ["latin", "cyrillic"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-onest",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Sway",
@@ -13,13 +23,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
+    <html lang="ru" className="scroll-smooth">
       <body
-        className={`antialiased bg-background`}
-        suppressHydrationWarning 
+        className={`${onest.className} antialiased bg-background`}
+        suppressHydrationWarning
       >
         <Header />
         {children}
+        <Footer />
+
+        <GlobalCollectionModal />
       </body>
     </html>
   );

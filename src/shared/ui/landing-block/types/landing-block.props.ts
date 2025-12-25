@@ -5,4 +5,5 @@ export interface LandingBlockProps {
     variant?: "light" | "dark";
     px?: number;
     py?: number;
+    className?: string;
 }

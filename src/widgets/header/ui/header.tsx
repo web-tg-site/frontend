@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LINKS } from "../config";
 import { LinkButton } from "@/shared/ui";
 import { HeaderLinkButton } from "./header-link-button";
+import { CollectionButton } from "./collection-button";
 
 export const Header = () => {
     return (
@@ -23,9 +24,13 @@ export const Header = () => {
                 ))}
             </nav>
 
-            <LinkButton href='/catalog'>
-                Перейти в каталог
-            </LinkButton>
+            <div className="flex items-center gap-[6.5px]">
+                <CollectionButton />
+                
+                <LinkButton href='/catalog'>
+                    Перейти в каталог
+                </LinkButton>
+            </div>
         </header>
     )
 }

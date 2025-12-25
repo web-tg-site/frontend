@@ -12,7 +12,6 @@ export const LinkButton = (props: LinkButtonProps) => {
     const { children, className, loading, ...rest } = props
     const isLink = "href" in rest && rest.href
 
-    // ИСПРАВЛЕНИЕ: Явно указываем тип Transition
     const softSpring: Transition = {
         type: "spring",
         stiffness: 120,
@@ -21,16 +20,23 @@ export const LinkButton = (props: LinkButtonProps) => {
     }
 
     const containerClasses = cn(
-        "group relative inline-flex items-center justify-center h-[40px] rounded-[30px] overflow-hidden select-none isolate",
+        // ИЗМЕНЕНИЕ: rounded-full вместо rounded-[30px].
+        // Это критично: если кнопка станет выше, углы контейнера всегда будут соответствовать кругу внутри.
+        "group relative inline-flex items-center justify-center min-h-[40px] rounded-full overflow-hidden select-none isolate",
         "cursor-pointer",
         "disabled:opacity-70 disabled:cursor-not-allowed disabled:pointer-events-none",
+        // Добавляем p-1, чтобы создать безопасную зону, если нужно, но ваша логика с абсолютами тоже работает
         className
     )
+
+    // Размер отступа для круга
+    const padding = "4px"
 
     const content = (
         <>
             {/* 1. ПРИЗРАЧНЫЙ ЭЛЕМЕНТ (Задает ширину кнопки) */}
-            <div className="invisible flex items-center pl-4 pr-[50px] whitespace-nowrap font-medium text-[16px]">
+            {/* pr-14 резервирует место под круг. Если кнопка ОЧЕНЬ высокая, возможно, потребуется увеличить pr */}
+            <div className="invisible flex items-center pl-6 pr-14 whitespace-nowrap font-medium text-[16px]">
                 {children}
             </div>
 
@@ -47,9 +53,8 @@ export const LinkButton = (props: LinkButtonProps) => {
 
             {/* 3. ТЕКСТЫ */}
             <div className="absolute inset-0 z-10 flex items-center pointer-events-none">
-                {/* Текст СЛЕВА (Черный) */}
                 <motion.div 
-                    className="absolute left-4 flex items-center"
+                    className="absolute left-6 flex items-center"
                     variants={{
                         initial: { opacity: 1, x: 0 },
                         hover: { opacity: 0, x: -10 }
@@ -61,9 +66,8 @@ export const LinkButton = (props: LinkButtonProps) => {
                     </span>
                 </motion.div>
 
-                {/* Текст СПРАВА (Белый) */}
                 <motion.div 
-                    className="absolute right-4 flex items-center justify-end"
+                    className="absolute right-6 flex items-center justify-end"
                     variants={{
                         initial: { opacity: 0, x: 10 },
                         hover: { opacity: 1, x: 0 }
@@ -78,42 +82,46 @@ export const LinkButton = (props: LinkButtonProps) => {
 
             {/* 4. КАТЯЩИЙСЯ КРУГ */}
             <motion.div
-                className="absolute top-0.5 z-20 flex items-center justify-center rounded-full h-9 w-9"
+                // h-[86%] — круг всегда 86% от высоты кнопки
+                // aspect-square — ширина равна высоте
+                className="absolute top-1/2 z-20 flex -translate-y-1/2 items-center justify-center rounded-full aspect-square h-[86%]"
                 variants={{
                     initial: { 
-                        left: "calc(100% - 38px)", 
+                        // Логика: ставим левый край круга на 100% ширины родителя,
+                        // затем сдвигаем назад на ширину самого круга (-100%) и минус отступ.
+                        // Это гарантирует привязку к правому краю независимо от размера.
+                        left: "100%", 
+                        x: `calc(-100% - ${padding})`, 
                         backgroundColor: "#0088FF",
                         rotate: 0 
                     },
                     hover: { 
-                        left: "2px", 
+                        // Логика: ставим левый край на 0, сдвигаем вправо на отступ.
+                        left: "0%", 
+                        x: padding, 
                         backgroundColor: "#FFFFFF",
                         rotate: -180 
                     }
                 }}
                 transition={softSpring}
             >
-                {loading ? (
-                    <motion.div
-                        variants={{
-                            initial: { color: "#FFFFFF" },
-                            hover: { color: "#0088FF" }
-                        }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <SpinnerIcon className="w-4 h-4 animate-spin" />
-                    </motion.div>
-                ) : (
-                    <motion.div
-                        variants={{
-                            initial: { color: "#FFFFFF" },
-                            hover: { color: "#0088FF" }
-                        }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <ArrowIcon className="w-4 h-4" />
-                    </motion.div>
-                )}
+                {/* Обертка для иконки, чтобы центрировать SVG */}
+                <motion.div
+                    className="flex items-center justify-center w-full h-full"
+                    variants={{
+                        initial: { color: "#FFFFFF" },
+                        hover: { color: "#0088FF" }
+                    }}
+                    transition={{ duration: 0.2 }}
+                >
+                     {loading ? (
+                        <SpinnerIcon className="w-[45%] h-[45%] animate-spin" />
+                    ) : (
+                        // w-[45%] берется от размера КРУГА, который зависит от высоты кнопки.
+                        // Иконка будет масштабироваться автоматически.
+                        <ArrowIcon className="w-[45%] h-[45%]" />
+                    )}
+                </motion.div>
             </motion.div>
         </>
     )

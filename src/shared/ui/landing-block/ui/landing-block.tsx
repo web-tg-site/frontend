@@ -5,10 +5,11 @@ export const LandingBlock = ({
     children,
     variant = 'light',
     px = 0,
-    py = 0
+    py = 0,
+    className=''
 }: LandingBlockProps) => {
     return (
-        <section className={cn(variant === 'dark' ? 'bg-secondary border border-white/10 ' : 'bg-white', 'rounded-2xl', px ? `px-${px}` : '', py ? `py-${py}` : '')}>
+        <section className={cn(variant === 'dark' ? 'bg-secondary border border-white/10 ' : 'bg-white', 'rounded-2xl', px ? `px-${px}` : '', py ? `py-${py}` : '', className)}>
             {children}
         </section>
     )

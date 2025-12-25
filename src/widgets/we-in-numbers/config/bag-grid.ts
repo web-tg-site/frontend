@@ -1,0 +1,5 @@
+export const BAGS_GRID = [
+    1, 0, 1, 0, 1, null,
+    null, null, null, 1, 0, 0,
+    null, null, null, null, 0, 1,
+];
