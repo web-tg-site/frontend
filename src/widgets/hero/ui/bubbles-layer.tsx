@@ -20,8 +20,21 @@ interface BubbleData {
     href: string;
 }
 
+// 1. Интерфейс для события перетаскивания (исправляет ошибку event.body)
+interface MouseConstraintEvent extends Matter.IEvent<Matter.MouseConstraint> {
+    body?: Matter.Body;
+}
+
+// 2. Интерфейс для расширения объекта Mouse (исправляет ошибку mouse.mousewheel)
+// Мы говорим TS, что в mouse на самом деле есть эти методы
+interface ExtendedMouse extends Matter.Mouse {
+    mousewheel: (e: Event) => void;
+    mousemove: (e: Event) => void;
+    mousedown: (e: Event) => void;
+    mouseup: (e: Event) => void;
+}
+
 const BUBBLES_DATA: BubbleData[] = [
-    // Левая сторона макета
     { id: 1, title: "Фотография", icon: Camera, colorClass: "bg-orange-500", href: "/catalog/photo" },
     { id: 2, title: "Правильное питание", icon: Apple, colorClass: "bg-green-600", href: "/catalog/nutrition" },
     { id: 3, title: "Наука", icon: BookOpen, colorClass: "bg-teal-500", href: "/catalog/science" },
@@ -34,8 +47,6 @@ const BUBBLES_DATA: BubbleData[] = [
     { id: 10, title: "Программирование", icon: Code, colorClass: "bg-blue-500", href: "/catalog/programming" },
     { id: 11, title: "Стартапы", icon: Rocket, colorClass: "bg-red-500", href: "/catalog/startups" },
     { id: 12, title: "Маркетинг", icon: Megaphone, colorClass: "bg-orange-600", href: "/catalog/marketing" },
-    
-    // Правая сторона макета
     { id: 13, title: "Акции и купоны", icon: Tag, colorClass: "bg-yellow-500", href: "/catalog/sales" },
     { id: 14, title: "Уют и комфорт", icon: Home, colorClass: "bg-purple-600", href: "/catalog/home" },
     { id: 15, title: "Здоровье", icon: Heart, colorClass: "bg-green-500", href: "/catalog/health" },
@@ -80,7 +91,6 @@ export const BubblesLayer = () => {
 
             BUBBLES_DATA.forEach((bubble) => {
                 const el = bubbleElements.current.get(bubble.id);
-                // Если элемент еще не отрисован (например, при ssr или лаге), берем дефолтные увеличенные размеры
                 const elWidth = el?.offsetWidth || 160; 
                 const elHeight = el?.offsetHeight || 52; 
 
@@ -106,13 +116,11 @@ export const BubblesLayer = () => {
                 bubblesBodies.push({ bubbleId: bubble.id, body, width: elWidth, height: elHeight });
             });
 
-            // Стены и пол
             const wallThickness = 100;
             const ground = Bodies.rectangle(width / 2, height + wallThickness / 2, width + 400, wallThickness, { isStatic: true });
             const wallLeft = Bodies.rectangle(-wallThickness / 2, height / 2, wallThickness, height * 3, { isStatic: true });
             const wallRight = Bodies.rectangle(width + wallThickness / 2, height / 2, wallThickness, height * 3, { isStatic: true });
 
-            // Телефон
             const phoneWidth = 420;
             const phoneVisibleHeight = 350;
             const phoneTopY = height - 340;
@@ -140,12 +148,21 @@ export const BubblesLayer = () => {
             const mouse = Mouse.create(document.body);
             mouse.element.style.touchAction = "auto";
             
-            // @ts-ignore
-            mouse.element.removeEventListener("mousewheel", mouse.mousewheel);
-            // @ts-ignore
-            mouse.element.removeEventListener("DOMMouseScroll", mouse.mousewheel);
-            // @ts-ignore
-            mouse.element.removeEventListener("wheel", mouse.mousewheel);
+            // 👇 3. Приводим mouse к расширенному типу (безопасно через unknown)
+            const extendedMouse = mouse as unknown as ExtendedMouse;
+            const mouseElement = mouse.element as HTMLElement;
+
+            // Теперь мы можем обращаться к extendedMouse.mousewheel без any
+            if (extendedMouse.mousewheel) {
+                mouseElement.removeEventListener("mousewheel", extendedMouse.mousewheel);
+                mouseElement.removeEventListener("DOMMouseScroll", extendedMouse.mousewheel);
+            }
+            if (extendedMouse.mousemove) {
+                mouseElement.removeEventListener("touchmove", extendedMouse.mousemove);
+            }
+            if (extendedMouse.mousewheel) {
+                mouseElement.removeEventListener("wheel", extendedMouse.mousewheel);
+            }
 
             const mouseConstraint = MouseConstraint.create(engine, {
                 mouse,
@@ -161,7 +178,9 @@ export const BubblesLayer = () => {
             let draggedBody: Matter.Body | null = null;
             let dragStart = { x: 0, y: 0, time: 0 };
 
-            Events.on(mouseConstraint, "startdrag", (event) => {
+            // Используем типизированный Event
+            Events.on(mouseConstraint, "startdrag", (e) => {
+                const event = e as MouseConstraintEvent;
                 if (event.body?.label?.startsWith("bubble-")) {
                     isDragging = true;
                     draggedBody = event.body;
@@ -248,9 +267,8 @@ export const BubblesLayer = () => {
                     }}
                     className={cn(
                         "absolute top-0 left-0 pointer-events-auto",
-                        // ИЗМЕНЕНИЯ РАЗМЕРОВ ЗДЕСЬ:
-                        "flex items-center gap-3 px-6 py-3.5 rounded-full", // Больше gap, px, py
-                        "text-white font-semibold select-none whitespace-nowrap", // font-semibold
+                        "flex items-center gap-3 px-6 py-3.5 rounded-full", 
+                        "text-white font-semibold select-none whitespace-nowrap",
                         "will-change-transform cursor-grab active:cursor-grabbing",
                         "shadow-lg",
                         bubble.colorClass
@@ -260,9 +278,7 @@ export const BubblesLayer = () => {
                         boxShadow: '0 4px 15px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.1)'
                     }}
                 >
-                    {/* Увеличен размер иконки до 24 */}
                     <bubble.icon size={24} strokeWidth={2.5} />
-                    {/* Увеличен размер текста до 17px */}
                     <span className="text-[17px]">{bubble.title}</span>
                 </div>
             ))}
