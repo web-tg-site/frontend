@@ -5,7 +5,7 @@ import { Category } from "@/shared/ui/category"
 import { CrumbItem, Crumbs } from "@/shared/ui/crumbs"
 import { Heart } from "lucide-react"
 import { useCollections } from "@/shared/store/use-collections"
-import { TopCard, LectureHall } from "@/widgets/channel"
+import { TopCard, LectureHall, Content, PriceAdd } from "@/widgets/channel"
 import Image from "next/image"
 
 const MOCK_ID = 1;
@@ -81,6 +81,10 @@ export const Channel = () => {
             </div>
             <div className="grid grid-cols-1 gap-2.5">
                 <LectureHall />
+
+                <Content />
+
+                <PriceAdd />
             </div>
         </section>
     )
