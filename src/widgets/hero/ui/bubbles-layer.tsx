@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/shared/utils";
 import { 
     Camera, Code, Bitcoin, Mic, BookOpen, Briefcase, 
-    Plane, Gamepad2, Heart, GraduationCap, Globe, 
-    Palette, Smile, Zap, Apple, ShoppingBag, Landmark, 
+    Plane, Gamepad2, Heart, GraduationCap, 
+    Apple, ShoppingBag, Landmark, 
     BarChart3, Rocket, Megaphone, Tag, Home, 
     BrainCircuit, Lightbulb, Languages, TrendingUp, Sparkles, LucideIcon 
 } from "lucide-react";
@@ -20,18 +20,8 @@ interface BubbleData {
     href: string;
 }
 
-// 1. Интерфейс для события перетаскивания (исправляет ошибку event.body)
 interface MouseConstraintEvent extends Matter.IEvent<Matter.MouseConstraint> {
     body?: Matter.Body;
-}
-
-// 2. Интерфейс для расширения объекта Mouse (исправляет ошибку mouse.mousewheel)
-// Мы говорим TS, что в mouse на самом деле есть эти методы
-interface ExtendedMouse extends Matter.Mouse {
-    mousewheel: (e: Event) => void;
-    mousemove: (e: Event) => void;
-    mousedown: (e: Event) => void;
-    mouseup: (e: Event) => void;
 }
 
 const BUBBLES_DATA: BubbleData[] = [
@@ -43,7 +33,7 @@ const BUBBLES_DATA: BubbleData[] = [
     { id: 6, title: "Криптовалюты", icon: Bitcoin, colorClass: "bg-emerald-500", href: "/catalog/crypto" },
     { id: 7, title: "Политика", icon: Landmark, colorClass: "bg-blue-600", href: "/catalog/politics" },
     { id: 8, title: "Аналитика", icon: BarChart3, colorClass: "bg-fuchsia-600", href: "/catalog/analytics" },
-    { id: 9, title: "Мемы", icon: Smile, colorClass: "bg-rose-600", href: "/catalog/memes" },
+    { id: 9, title: "Мемы", icon: BarChart3, colorClass: "bg-rose-600", href: "/catalog/memes" },
     { id: 10, title: "Программирование", icon: Code, colorClass: "bg-blue-500", href: "/catalog/programming" },
     { id: 11, title: "Стартапы", icon: Rocket, colorClass: "bg-red-500", href: "/catalog/startups" },
     { id: 12, title: "Маркетинг", icon: Megaphone, colorClass: "bg-orange-600", href: "/catalog/marketing" },
@@ -56,7 +46,7 @@ const BUBBLES_DATA: BubbleData[] = [
     { id: 19, title: "Нейросети", icon: BrainCircuit, colorClass: "bg-violet-600", href: "/catalog/ai" },
     { id: 20, title: "Лайфхаки", icon: Lightbulb, colorClass: "bg-teal-600", href: "/catalog/lifehacks" },
     { id: 21, title: "Бизнес", icon: Briefcase, colorClass: "bg-amber-700", href: "/catalog/business" },
-    { id: 22, title: "Искусство", icon: Palette, colorClass: "bg-orange-400", href: "/catalog/art" },
+    { id: 22, title: "Искусство", icon: Sparkles, colorClass: "bg-orange-400", href: "/catalog/art" },
     { id: 23, title: "Иностранные языки", icon: Languages, colorClass: "bg-yellow-400", href: "/catalog/languages" },
     { id: 24, title: "Красота", icon: Sparkles, colorClass: "bg-rose-500", href: "/catalog/beauty" },
     { id: 25, title: "Саморазвитие", icon: TrendingUp, colorClass: "bg-indigo-500", href: "/catalog/self-development" },
@@ -72,27 +62,38 @@ export const BubblesLayer = () => {
     useEffect(() => {
         if (!sceneRef.current) return;
 
-        const initTimeout = setTimeout(initPhysics, 50);
+        let initTimeout: NodeJS.Timeout;
+        let resizeTimeout: NodeJS.Timeout;
 
-        function initPhysics() {
+        const clearWorld = () => {
+            if (runnerRef.current) Matter.Runner.stop(runnerRef.current);
+            if (engineRef.current) {
+                Matter.World.clear(engineRef.current.world, false);
+                Matter.Engine.clear(engineRef.current);
+            }
+            runnerRef.current = null;
+            engineRef.current = null;
+        };
+
+        const initPhysics = () => {
             if (!sceneRef.current) return;
+            clearWorld();
 
             const { Engine, Runner, Bodies, Composite, Mouse, MouseConstraint, Events, Body } = Matter;
-
             const engine = Engine.create();
             engineRef.current = engine;
-            
             engine.gravity.y = 0.6;
 
-            const width = window.innerWidth;
+            const width = document.documentElement.clientWidth;
             const height = window.innerHeight;
 
+            // 1. Создание тел для бабблов
             const bubblesBodies: { bubbleId: number; body: Matter.Body; width: number; height: number }[] = [];
 
             BUBBLES_DATA.forEach((bubble) => {
                 const el = bubbleElements.current.get(bubble.id);
-                const elWidth = el?.offsetWidth || 160; 
-                const elHeight = el?.offsetHeight || 52; 
+                const elWidth = el?.offsetWidth || 100; 
+                const elHeight = el?.offsetHeight || 30; 
 
                 const x = width / 2 + (Math.random() - 0.5) * 300;
                 const y = -200 - Math.random() * 1200;
@@ -108,87 +109,69 @@ export const BubblesLayer = () => {
                 });
 
                 Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.15);
-                Body.setVelocity(body, { 
-                    x: (Math.random() - 0.5) * 4, 
-                    y: 5 + Math.random() * 5 
-                });
-
+                Body.setVelocity(body, { x: (Math.random() - 0.5) * 4, y: 5 + Math.random() * 5 });
                 bubblesBodies.push({ bubbleId: bubble.id, body, width: elWidth, height: elHeight });
             });
 
+            // 2. Стены и пол
             const wallThickness = 100;
             const ground = Bodies.rectangle(width / 2, height + wallThickness / 2, width + 400, wallThickness, { isStatic: true });
             const wallLeft = Bodies.rectangle(-wallThickness / 2, height / 2, wallThickness, height * 3, { isStatic: true });
             const wallRight = Bodies.rectangle(width + wallThickness / 2, height / 2, wallThickness, height * 3, { isStatic: true });
 
-            const phoneWidth = 420;
-            const phoneVisibleHeight = 350;
-            const phoneTopY = height - 340;
-            const phoneCenterY = phoneTopY + phoneVisibleHeight / 2;
+            const bodiesToAdd = [...bubblesBodies.map(b => b.body), ground, wallLeft, wallRight];
 
-            const phoneCollider = Bodies.rectangle(
-                width / 2, 
-                phoneCenterY, 
-                phoneWidth, 
-                phoneVisibleHeight, 
-                { 
-                    isStatic: true,
-                    chamfer: { radius: [55, 55, 20, 20] },
-                }
-            );
+            // 3. КОЛЛАЙДЕР ТЕЛЕФОНА
+            if (width > 500) {
+                const phoneW = 445; 
+                const phoneH = 350;
+                const phoneTopY = height - 340; 
+                const phoneCenterY = phoneTopY + (phoneH / 2);
 
-            Composite.add(engine.world, [
-                ...bubblesBodies.map(b => b.body),
-                ground,
-                wallLeft,
-                wallRight,
-                phoneCollider
-            ]);
+                const phoneCollider = Bodies.rectangle(
+                    width / 2, 
+                    phoneCenterY, 
+                    phoneW, 
+                    phoneH, 
+                    { 
+                        isStatic: true,
+                        chamfer: { radius: [60, 60, 20, 20] },
+                    }
+                );
+                bodiesToAdd.push(phoneCollider);
+            }
 
-            const mouse = Mouse.create(document.body);
-            mouse.element.style.touchAction = "auto";
-            
-            // 👇 3. Приводим mouse к расширенному типу (безопасно через unknown)
-            const extendedMouse = mouse as unknown as ExtendedMouse;
+            Composite.add(engine.world, bodiesToAdd);
+
+            // 4. Настройка взаимодействия
+            // ВАЖНО: Привязываем мышь к контейнеру (sceneRef), а не к document.body
+            const mouse = Mouse.create(sceneRef.current);
             const mouseElement = mouse.element as HTMLElement;
 
-            // Теперь мы можем обращаться к extendedMouse.mousewheel без any
-            if (extendedMouse.mousewheel) {
-                mouseElement.removeEventListener("mousewheel", extendedMouse.mousewheel);
-                mouseElement.removeEventListener("DOMMouseScroll", extendedMouse.mousewheel);
-            }
-            if (extendedMouse.mousemove) {
-                mouseElement.removeEventListener("touchmove", extendedMouse.mousemove);
-            }
-            if (extendedMouse.mousewheel) {
-                mouseElement.removeEventListener("wheel", extendedMouse.mousewheel);
-            }
+            // Убираем перехват колеса мыши, чтобы работал скролл колесиком на ПК
+            // @ts-ignore
+            mouse.element.removeEventListener("mousewheel", mouse.mousewheel);
+            // @ts-ignore
+            mouse.element.removeEventListener("DOMMouseScroll", mouse.mousewheel);
 
+            // НЕ удаляем touchmove слушатель, иначе не будет работать драг на мобильных!
+            
             const mouseConstraint = MouseConstraint.create(engine, {
                 mouse,
-                constraint: {
-                    stiffness: 0.2,
-                    render: { visible: false }
-                }
+                constraint: { stiffness: 0.2, render: { visible: false } }
             });
-
             Composite.add(engine.world, mouseConstraint);
 
             let isDragging = false;
             let draggedBody: Matter.Body | null = null;
             let dragStart = { x: 0, y: 0, time: 0 };
 
-            // Используем типизированный Event
             Events.on(mouseConstraint, "startdrag", (e) => {
                 const event = e as MouseConstraintEvent;
                 if (event.body?.label?.startsWith("bubble-")) {
                     isDragging = true;
                     draggedBody = event.body;
-                    dragStart = { 
-                        x: mouse.position.x, 
-                        y: mouse.position.y, 
-                        time: Date.now() 
-                    };
+                    dragStart = { x: mouse.position.x, y: mouse.position.y, time: Date.now() };
                 }
             });
 
@@ -198,15 +181,12 @@ export const BubblesLayer = () => {
                     const dy = mouse.position.y - dragStart.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     const duration = Date.now() - dragStart.time;
-
                     if (distance < 10 && duration < 250) {
                         const label = draggedBody.label;
                         if (label?.startsWith("bubble-")) {
                             const id = parseInt(label.replace("bubble-", ""));
                             const bubble = BUBBLES_DATA.find(b => b.id === id);
-                            if (bubble) {
-                                router.push(bubble.href);
-                            }
+                            if (bubble) router.push(bubble.href);
                         }
                     }
                 }
@@ -226,38 +206,34 @@ export const BubblesLayer = () => {
                         const y = body.position.y - h / 2;
                         el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${body.angle}rad)`;
 
-                        if (
-                            body.position.y > height + 300 || 
-                            body.position.x < -300 || 
-                            body.position.x > width + 300
-                        ) {
-                            Body.setPosition(body, { 
-                                x: 100 + Math.random() * (width - 200), 
-                                y: -200 - Math.random() * 300 
-                            });
+                        if (body.position.y > height + 300 || body.position.x < -300 || body.position.x > width + 300) {
+                            Body.setPosition(body, { x: 100 + Math.random() * (width - 200), y: -200 - Math.random() * 300 });
                             Body.setVelocity(body, { x: (Math.random() - 0.5) * 5, y: 5 });
-                            Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.1);
                         }
                     }
                 });
             });
-        }
+        };
 
+        initTimeout = setTimeout(initPhysics, 50);
+
+        const handleResize = () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(initPhysics, 300);
+        };
+
+        window.addEventListener("resize", handleResize);
         return () => {
             clearTimeout(initTimeout);
-            if (runnerRef.current) Matter.Runner.stop(runnerRef.current);
-            if (engineRef.current) {
-                Matter.Composite.clear(engineRef.current.world, false);
-                Matter.Engine.clear(engineRef.current);
-            }
+            clearTimeout(resizeTimeout);
+            window.removeEventListener("resize", handleResize);
+            clearWorld();
         };
     }, [router]);
 
     return (
-        <div 
-            ref={sceneRef} 
-            className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none"
-        >
+        // Контейнер имеет pointer-events-none, поэтому тапы мимо бабблов проходят на сайт
+        <div ref={sceneRef} className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
             {BUBBLES_DATA.map((bubble) => (
                 <div
                     key={bubble.id}
@@ -266,11 +242,11 @@ export const BubblesLayer = () => {
                         else bubbleElements.current.delete(bubble.id);
                     }}
                     className={cn(
-                        "absolute top-0 left-0 pointer-events-auto",
-                        "flex items-center gap-3 px-6 py-3.5 rounded-full", 
-                        "text-white font-semibold select-none whitespace-nowrap",
-                        "will-change-transform cursor-grab active:cursor-grabbing",
-                        "shadow-lg",
+                        // Добавлен 'touch-none', чтобы браузер не скроллил страницу, когда палец на баббле
+                        "absolute top-0 left-0 pointer-events-auto touch-none", 
+                        "flex items-center rounded-full text-white font-semibold select-none whitespace-nowrap will-change-transform cursor-grab active:cursor-grabbing shadow-lg",
+                        "px-3 py-2 gap-1.5", 
+                        "min-[1025px]:px-6 min-[1025px]:py-3.5 min-[1025px]:gap-3", 
                         bubble.colorClass
                     )}
                     style={{
@@ -278,8 +254,8 @@ export const BubblesLayer = () => {
                         boxShadow: '0 4px 15px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.1)'
                     }}
                 >
-                    <bubble.icon size={24} strokeWidth={2.5} />
-                    <span className="text-[17px]">{bubble.title}</span>
+                    <bubble.icon className="w-3.5 h-3.5 min-[1025px]:w-6 min-[1025px]:h-6" strokeWidth={2.5} />
+                    <span className="text-[10px] min-[1025px]:text-[17px]">{bubble.title}</span>
                 </div>
             ))}
         </div>

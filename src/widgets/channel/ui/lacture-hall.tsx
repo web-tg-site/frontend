@@ -28,59 +28,74 @@ export const LectureHall = () => {
                 Аудитория
             </Title>
 
-            {/* Используем grid-cols-6 для гибкости */}
-            <div className="grid grid-cols-6 gap-2.5">
+            {/* 
+               Контейнер:
+               < 500px: flex-col (одна колонка)
+               500-1024px: grid-cols-2 (две колонки для планшета)
+               > 1024px: grid-cols-6 (оригинальная сложная сетка)
+            */}
+            <div className="flex flex-col gap-2.5 min-[500px]:grid min-[500px]:grid-cols-2 min-[500px]:items-start lg:grid-cols-6 lg:auto-rows-min">
                 
-                {/* 1. Левая колонка (Диаграмма) */}
-                {/* col-span-2 (занимает 1/3 ширины) */}
-                {/* row-span-2 (растягивается на 2 ряда в высоту, чтобы быть наравне с блоками справа) */}
-                <ChannelEngagementCard 
-                    activePercentage={77} 
-                    stats={statsData}
-                    className="col-span-2 row-span-2 h-full"
-                />
-
-                {/* 2. Центральная колонка (Интересы) */}
-                {/* col-span-2 (занимает 1/3 ширины) */}
-                <Interests 
-                    items={interestsItems}
-                    className="col-span-2 h-full"
-                />
-
-                {/* 3. Правая колонка (Две карточки друг под другом) */}
-                {/* col-span-2 (занимает 1/3 ширины) */}
-                <div className="col-span-2 flex flex-col gap-2.5 h-full">
-                    <ConsumptionCard 
-                        text="Аудитория ценит авторский тон, экспертность и личное мнение, читает не «на бегу», а с вовлечением"
-                        className="h-full"
+                {/* 
+                    ГРУППА 1 (Левая на планшете) 
+                    На ПК (lg) становится 'contents', то есть исчезает как блок, 
+                    а её дети встают в главную сетку grid-cols-6
+                */}
+                <div className="flex flex-col gap-2.5 w-full lg:contents">
+                    {/* График: На ПК занимает 2 колонки и 2 ряда (слева) */}
+                    <ChannelEngagementCard 
+                        activePercentage={77} 
+                        stats={statsData}
+                        className="w-full lg:col-span-2 lg:row-span-2 lg:h-full"
                     />
 
-                    <HowReadCard 
-                        text="Читают вдумчиво, часто возвращаются к постам и сохраняют полезные разборы"
-                        className="h-full"
+                    {/* Интересы: На ПК занимает 2 колонки (центр верх) */}
+                    <Interests 
+                        items={interestsItems}
+                        className="w-full lg:col-span-2 lg:h-full"
                     />
                 </div>
 
-                {/* 4. География (Второй ряд, под Интересами и Правой колонкой) */}
-                {/* col-span-4 (занимает 2/3 ширины: центр + право) */}
-                <GeographyCard 
-                    items={geographyItems}
-                    className="col-span-4"
-                />
+                {/* 
+                    ГРУППА 2 (Правая на планшете)
+                    На ПК (lg) также исчезает (contents)
+                */}
+                <div className="flex flex-col gap-2.5 w-full lg:contents">
+                    
+                    {/* 
+                        Обертка для 2-х карточек справа. 
+                        На планшете это просто часть правой колонки.
+                        На ПК занимает 2 колонки справа сверху.
+                    */}
+                    <div className="flex flex-col gap-2.5 lg:col-span-2 lg:h-full">
+                        <ConsumptionCard 
+                            text="Аудитория ценит авторский тон, экспертность и личное мнение, читает не «на бегу», а с вовлечением"
+                            className="w-full lg:flex-1" // flex-1 чтобы растягивались равномерно
+                        />
+                        <HowReadCard 
+                            text="Читают вдумчиво, часто возвращаются к постам и сохраняют полезные разборы"
+                            className="w-full lg:flex-1"
+                        />
+                    </div>
 
-                {/* 5. Нижний ряд: Реакция */}
-                {/* col-span-3 (занимает 50% ширины) */}
-                <ReactionCard 
-                    text="Лучше всего заходят нативные интеграции и личные рекомендации автора. Плохо воспринимаются агрессивные офферы и шаблонные рекламные форматы"
-                    className="col-span-3 h-full"
-                />
+                    {/* География: На ПК встает под интересами и правой колонкой (span-4) */}
+                    <GeographyCard 
+                        items={geographyItems}
+                        className="w-full lg:col-span-4 lg:h-full"
+                    />
 
-                {/* 6. Нижний ряд: Частота */}
-                {/* col-span-3 (занимает 50% ширины) */}
-                <FrequencyCard 
-                    text="Читают вечером или заходят несколько раз в день, как к «тихому личному источнику мнений»"
-                    className="col-span-3 h-full"
-                />
+                    {/* Реакция: На ПК нижний ряд слева (span-3) */}
+                    <ReactionCard 
+                        text="Лучше всего заходят нативные интеграции и личные рекомендации автора. Плохо воспринимаются агрессивные офферы и шаблонные рекламные форматы"
+                        className="w-full lg:col-span-3 lg:h-full"
+                    />
+
+                    {/* Частота: На ПК нижний ряд справа (span-3) */}
+                    <FrequencyCard 
+                        text="Читают вечером или заходят несколько раз в день, как к «тихому личному источнику мнений»"
+                        className="w-full lg:col-span-3 lg:h-full"
+                    />
+                </div>
             </div>
         </LandingBlock>
     )

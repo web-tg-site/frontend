@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LINKS } from "../config";
 import { LinkButton } from "@/shared/ui";
-import { HeaderLinkButton } from "./header-link-button";
 import { CollectionButton } from "./collection-button";
+import { BurgerMenu } from "./buger-menu";
 
 export const Header = () => {
     return (
@@ -18,19 +17,15 @@ export const Header = () => {
                 />
             </Link>
 
-            <nav className="grid grid-cols-3 gap-4.5">
-                {LINKS.map((link, idx) => (
-                    <HeaderLinkButton {...link} key={idx} />
-                ))}
-            </nav>
-
-            <div className="flex items-center gap-[6.5px]">
+            <div className="lg:flex items-center gap-[6.5px] hidden">
                 <CollectionButton />
                 
                 <LinkButton href='/catalog'>
                     Перейти в каталог
                 </LinkButton>
             </div>
+
+            <BurgerMenu />
         </header>
     )
 }

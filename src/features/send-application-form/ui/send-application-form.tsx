@@ -3,18 +3,22 @@
 import { useState } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { motion, AnimatePresence } from "framer-motion"
-import { Text, Title } from "@/shared/ui/text"
+import Link from "next/link"
+
 import { SendApplicationFormProps } from "../types/send-application-form.props"
 import { SendApplicationFormData } from "../types/send-application-form-data"
 import { SendApplication } from "../api/send-application"
-import { cn } from "@/shared/utils"
-import { Input, LinkButton } from "@/shared/ui"
 
-export const SendApplicationForm = ({
-    className = ""
-}: SendApplicationFormProps) => {
-    const [isLoading, setIsLoading] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
+import { cn } from "@/shared/utils"
+import { Text, Title } from "@/shared/ui/text"
+import { Checkbox, Input } from "@/shared/ui/form"
+import { LinkButton } from "@/shared/ui/link-button"
+import { variants } from "../config/animation-variants"
+
+
+export const SendApplicationForm = ({ className = "" }: SendApplicationFormProps) => {
+    const [isLoading, setIsLoading] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
 
     const {
         register,
@@ -25,39 +29,37 @@ export const SendApplicationForm = ({
     } = useForm<SendApplicationFormData>({
         defaultValues: {
             name: "",
-            phone: "", 
+            phone: "",
             telegram: "",
-            comment: ""
+            comment: "",
+            isAgreed: false,
         }
-    });
+    })
 
     const onSubmit = async (data: SendApplicationFormData) => {
-        setIsLoading(true);
+        setIsLoading(true)
+
+        const { isAgreed, ...payload } = data
+
         try {
             await SendApplication({
-                ...data,
-                comment: data.comment || ""
-            });
-            
-            setIsSuccess(true);
-            reset();
-            
-            setTimeout(() => setIsSuccess(false), 5000);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+                ...payload,
+                comment: payload.comment || ""
+            })
 
-    const variants = {
-        hidden: { opacity: 0, y: 10, scale: 0.98 },
-        visible: { opacity: 1, y: 0, scale: 1 },
-        exit: { opacity: 0, y: -10, scale: 0.98 }
-    };
+            setIsSuccess(true)
+            reset()
+
+            setTimeout(() => setIsSuccess(false), 5000)
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     return (
-        <div className={cn("px-8 bg-[#6155F5] rounded-2xl overflow-hidden relative", className)}>
+        <div className={cn("lg:px-8 px-4 bg-[#6155F5] rounded-2xl overflow-hidden relative", className)}>
             <AnimatePresence mode="wait" initial={false}>
                 {isSuccess ? (
                     <motion.div
@@ -86,15 +88,15 @@ export const SendApplicationForm = ({
                         animate="visible"
                         exit="exit"
                         transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="py-8"
+                        className="lg:py-8 py-4"
                     >
-                        <Text className="mb-[86px]">
+                        <Text className="lg:mb-[86px] mb-6">
                             Оставьте заявку и мы вышлем вам персональную ссылку для вашей компании с подборкой каналов под ваши цели
                         </Text>
 
-                        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
                             <div className="grid grid-cols-1 gap-2.5 mb-6">
-                                <Input 
+                                <Input
                                     placeholder="Имя"
                                     {...register("name")}
                                     disabled={isLoading}
@@ -114,24 +116,24 @@ export const SendApplicationForm = ({
                                             type="tel"
                                             error={errors.phone?.message}
                                             disabled={isLoading}
-                                            onFocus={(e) => {
-                                                if (!field.value) field.onChange("+");
-                                                field.onBlur();
+                                            onFocus={() => {
+                                                if (!field.value) field.onChange("+")
+                                                field.onBlur()
                                             }}
-                                            onBlur={(e) => {
-                                                if (field.value === "+") field.onChange("");
-                                                field.onBlur();
+                                            onBlur={() => {
+                                                if (field.value === "+") field.onChange("")
+                                                field.onBlur()
                                             }}
                                             onChange={(e) => {
-                                                let val = e.target.value.replace(/[^0-9+\s\-()]/g, "");
+                                                let val = e.target.value.replace(/[^0-9+\s\-()]/g, "")
                                                 if (val === "") {
-                                                    field.onChange("");
-                                                    return;
+                                                    field.onChange("")
+                                                    return
                                                 }
                                                 if (!val.startsWith("+")) {
-                                                    val = "+" + val.replace(/\+/g, "");
+                                                    val = "+" + val.replace(/\+/g, "")
                                                 }
-                                                field.onChange(val);
+                                                field.onChange(val)
                                             }}
                                         />
                                     )}
@@ -150,42 +152,57 @@ export const SendApplicationForm = ({
                                             placeholder="Telegram *"
                                             error={errors.telegram?.message}
                                             disabled={isLoading}
-                                            onFocus={(e) => {
-                                                if (!field.value) field.onChange("@");
-                                                field.onBlur();
+                                            onFocus={() => {
+                                                if (!field.value) field.onChange("@")
+                                                field.onBlur()
                                             }}
-                                            onBlur={(e) => {
-                                                if (field.value === "@") field.onChange("");
-                                                field.onBlur();
+                                            onBlur={() => {
+                                                if (field.value === "@") field.onChange("")
+                                                field.onBlur()
                                             }}
                                             onChange={(e) => {
-                                                let val = e.target.value;
+                                                let val = e.target.value
                                                 if (val === "") {
-                                                    field.onChange("");
-                                                    return;
+                                                    field.onChange("")
+                                                    return
                                                 }
                                                 if (!val.startsWith("@")) {
-                                                    val = "@" + val.replace(/@/g, "");
+                                                    val = "@" + val.replace(/@/g, "")
                                                 }
-                                                field.onChange(val);
+                                                field.onChange(val)
                                             }}
                                         />
                                     )}
                                 />
 
-                                <Input 
+                                <Input
                                     placeholder="Комментарий"
                                     {...register("comment")}
                                     disabled={isLoading}
                                 />
                             </div>
 
-                            {/* 👇 ИСПРАВЛЕНИЕ ЗДЕСЬ 👇 */}
+                            <Checkbox
+                                className="mb-10"
+                                error={errors.isAgreed?.message}
+                                {...register("isAgreed", {
+                                    required: "Необходимо согласие на обработку данных",
+                                })}
+                            >
+                                Я ознакомился и согласен с{" "}
+                                <Link
+                                    href="/policy"
+                                    className="transition hover:underline underline-offset-4"
+                                >
+                                    Политикой конфиденциальности сайта
+                                </Link>
+                            </Checkbox>
+
                             <LinkButton
                                 type="submit"
                                 loading={isLoading}
                                 disabled={isLoading}
-                                animate="initial" 
+                                animate="initial"
                                 className="w-full h-[50px] text-[20px]"
                             >
                                 Заказать подборку

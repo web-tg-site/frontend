@@ -11,8 +11,8 @@ export const Title = ({
 
     const styles = {
         h1: 'text-[32px] font-semibold',
-        h2: 'text-[30px] font-medium' ,
-        h3: 'text-[26px] font-medium',
+        h2: 'lg:text-[30px] text-[24px] font-medium' ,
+        h3: 'lg:text-[26px] text-[14px] font-medium',
     };
 
     return (

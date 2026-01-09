@@ -9,17 +9,17 @@ export const AdvantageCard = ({
 }: AdvantageCardProps) => {
     if (empty) {
         return (
-            <div className="h-full min-h-[336px] bg-transparent border border-white/20 rounded-[20px]" />
+            <div className="h-full lg:min-h-[336px] min-h-[200px] bg-transparent border border-white/20 rounded-[20px]" />
         )
     }
 
     return (
-        <div className="rounded-[20px] aspect-square bg-white/15 p-5.5 h-full min-h-[336px] flex flex-col justify-between items-start">
+        <div className="rounded-[20px] w-full bg-white/15 p-5.5 h-full lg:min-h-[336px] min-h-[200px] flex flex-col justify-between items-start">
             <div
                 style={{
                     backgroundColor: color
                 }}
-                className="w-[54px] h-[54px] rounded-full flex justify-center items-center shrink-0"
+                className="lg:w-[54px] w-9 lg:h-[54px] h-9 rounded-full flex justify-center items-center shrink-0"
             >
                 <Numbers variant="2" className="leading-none">
                     {num < 10 ? `0${num}` : num}

@@ -1,6 +1,7 @@
 import { forwardRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/shared/utils"
+import { InputProps } from "../types/input.props"
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
     ({ className, error, ...props }, ref) => {
@@ -10,23 +11,29 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     ref={ref}
                     className={cn(
                         // 1. Базовая форма и фон
-                        "w-full rounded-full border bg-white/10 px-6 py-4 outline-none transition-all duration-300",
+                        "w-full rounded-full border bg-white/10 outline-none transition-all duration-300",
+                        
+                        // === АДАПТИВНЫЕ ОТСТУПЫ ===
+                        // Мобилка (< 1024px): px-4 py-3 (поменьше)
+                        // Десктоп (>= 1024px): px-6 py-4 (как было)
+                        "px-4 py-3 lg:px-6 lg:py-4",
                         
                         // 2. Типографика
-                        "text-white placeholder:text-white/60 text-base font-medium",
+                        "text-white placeholder:text-white/60 font-medium",
+                        
+                        // === АДАПТИВНЫЙ ШРИФТ ===
+                        // Мобилка: text-sm (14px) 
+                        // Десктоп: text-base (16px)
+                        "text-sm lg:text-base",
                         
                         // 3. Границы и интерактивность
                         "border-white/20 hover:border-white/40 hover:bg-white/15",
                         "focus:border-white focus:bg-white/20",
                         
                         // 4. ФИКС АВТОЗАПОЛНЕНИЯ (AUTOFILL)
-                        // Делаем курсор белым
                         "caret-white",
-                        // Форсируем белый цвет текста при автозаполнении
                         "[&:-webkit-autofill]:[-webkit-text-fill-color:#fff]",
-                        // Делаем "тень" прозрачной (иногда помогает от фона)
                         "[&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_transparent]",
-                        // Главный трюк: замедляем смену фона на 5000 секунд, чтобы он оставался прозрачным
                         "[&:-webkit-autofill]:transition-[background-color] [&:-webkit-autofill]:duration-[5000s]",
                         
                         // 5. Состояние ошибки
@@ -46,7 +53,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                             transition={{ type: "spring", stiffness: 500, damping: 30, mass: 1 }}
                             className="overflow-hidden"
                         >
-                            <p className="px-6 pt-1 text-xs text-red-300 font-medium ml-1">
+                            {/* Отступы сообщения об ошибке тоже адаптируем под инпут */}
+                            <p className="pt-1 text-xs text-red-300 font-medium ml-1 px-4 lg:px-6">
                                 {error}
                             </p>
                         </motion.div>

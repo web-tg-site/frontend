@@ -8,10 +8,10 @@ export const Text = ({
     ...props
 }: TextProps) => {
     const styles = {
-        '1': 'text-[26px] font-medium leading-[1.1]',
-        '2': 'text-[20px] font-normal leading-none',
-        '3': 'text-[18px] font-normal leading-none',
-        '4': 'text-[14px] font-normal leading-none',
+        '1': 'lg:text-[26px] text-[14px] font-medium leading-[1.1]',
+        '2': 'lg:text-[20px] text-[16px] font-normal leading-none',
+        '3': 'lg:text-[18px] text-[16px] font-normal leading-none',
+        '4': 'lg:text-[14px] text-[12px] font-normal leading-none',
     };
 
     return (

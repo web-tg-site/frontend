@@ -8,8 +8,8 @@ export const Numbers = ({
     ...props
 }: NumbersProps) => {
     const styles = {
-        '1': 'text-[100px]',
-        '2': 'text-[33px]',
+        '1': 'lg:text-[100px] text-[70px]',
+        '2': 'lg:text-[33px] text-[20px]',
     };
 
     return (

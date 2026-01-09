@@ -7,6 +7,7 @@ import { Headline, Numbers } from "@/shared/ui"
 import { notFound } from "next/navigation"
 import { ChannelCard } from "@/entities/channel"
 import { SendApplicationForm } from "@/features/send-application-form"
+import { Order } from "@/widgets/order"
 
 export const MyCollections = ({
     id
@@ -45,8 +46,8 @@ export const MyCollections = ({
             </div>
 
             {/* 👇 Общая сетка: 3 колонки. Слева 2 под карточки, справа 1 под форму */}
-            <div className="grid grid-cols-3 gap-4 items-start">
-                <div className="col-span-2 grid grid-cols-2 gap-4">
+            <div className="lg:grid lg:grid-cols-3 block gap-4 items-start">
+                <div className="col-span-2 grid md:grid-cols-2 grid-cols-1 lg:gap-4 gap-3 mb-3">
                     {channels.map((channel, idx) => (
                         <ChannelCard 
                             {...channel}
@@ -61,10 +62,14 @@ export const MyCollections = ({
                     )}
                 </div>
 
-                <div className="col-span-1 sticky top-[120px]">
+                <div className="col-span-1 sticky top-[120px] hidden lg:block">
                     <SendApplicationForm 
                         className="py-8"
                     />
+                </div>
+
+                <div className="block lg:hidden">
+                    <Order />
                 </div>
             </div>
         </section>

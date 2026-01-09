@@ -12,7 +12,7 @@ export const FilterButton = ({ className, isActive, ...props }: FilterButtonProp
             type="button"
             className={cn(
                 // 1. Базовые стили
-                "cursor-pointer group inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-full border border-white transition-all duration-300 outline-none select-none",
+                "cursor-pointer group inline-flex items-center justify-center gap-2.5 lg:px-6 px-3 lg:py-3 py-2 rounded-full border border-white transition-all duration-300 outline-none select-none",
                 "text-base font-medium",
 
                 // 2. Логика цветов:
@@ -27,7 +27,7 @@ export const FilterButton = ({ className, isActive, ...props }: FilterButtonProp
             )}
             {...props}
         >
-            <Filter className="w-5 h-5" strokeWidth={2} />
+            <Filter className="lg:w-5 w-3 lg:h-5 h-3" strokeWidth={2} />
             
             <span>Фильтрация</span>
         </button>

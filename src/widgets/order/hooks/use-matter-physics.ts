@@ -19,7 +19,7 @@ export const useMatterPhysics = (
 
         const { Engine, Runner, Bodies, Composite, Mouse, MouseConstraint, Events, Body } = Matter;
 
-        // Настройки движка
+        // Создаем движок
         const engine = Engine.create({
             positionIterations: 8,
             velocityIterations: 8
@@ -28,13 +28,14 @@ export const useMatterPhysics = (
         engine.gravity.y = 1;
 
         const container = containerRef.current;
-        const width = container.clientWidth;
-        const height = container.clientHeight;
+        let width = container.clientWidth;
+        let height = container.clientHeight;
 
         const wallThickness = 1000; 
         const renderHidden = { visible: false };
 
-        // 1. Границы (Пол, Стены, Потолок)
+        // 1. Создаем границы (стены)
+        // Выносим создание стен в переменные, чтобы иметь к ним доступ
         const ground = Bodies.rectangle(width / 2, height + wallThickness / 2 - 10, width + 200, wallThickness, { isStatic: true, render: renderHidden, label: "ground" });
         const wallLeft = Bodies.rectangle(0 - wallThickness / 2, height / 2, wallThickness, height * 2, { isStatic: true, render: renderHidden, label: "wall" });
         const wallRight = Bodies.rectangle(width + wallThickness / 2, height / 2, wallThickness, height * 2, { isStatic: true, render: renderHidden, label: "wall" });
@@ -42,15 +43,16 @@ export const useMatterPhysics = (
 
         const bubblesBodies: { id: number; body: Matter.Body; w: number; h: number }[] = [];
 
-        // 2. Создание тел для элементов
+        // 2. Создаем тела
         items.forEach((item) => {
             const el = elementsMap.current.get(item.id);
             if (!el) return;
 
+            // Тут берутся размеры элемента. Так как CSS уже применил адаптивные классы,
+            // размеры w и h будут маленькими на телефоне и большими на ПК автоматически.
             const w = el.offsetWidth;
             const h = el.offsetHeight;
 
-            // Спавн в центре/внизу, чтобы не застряли в потолке
             const x = Math.random() * (width - 100) + 50;
             const y = Math.random() * (height / 2) + (height / 3); 
 
@@ -68,9 +70,11 @@ export const useMatterPhysics = (
 
         Composite.add(engine.world, [ground, wallLeft, wallRight, ceiling, ...bubblesBodies.map(b => b.body)]);
 
-        // 3. Настройка мыши
+        // 3. Настройка мыши и тача
         const mouse = Mouse.create(container);
-        mouse.element.style.touchAction = "pan-y";
+        
+        // ВАЖНО: Ставим none, чтобы браузер не скроллил страницу при перетаскивании тегов пальцем
+        mouse.element.style.touchAction = "none";
 
         const mouseElement = mouse.element as HTMLElement;
         const mouseWheelHandler = (mouse as unknown as { mousewheel: (e: Event) => void }).mousewheel;
@@ -93,7 +97,7 @@ export const useMatterPhysics = (
         runnerRef.current = runner;
         Runner.run(runner, engine);
 
-        // 4. Ограничитель (Clamp) от пролета сквозь потолок
+        // 4. Логика "потолка" (не даем улететь вверх)
         Events.on(engine, "beforeUpdate", () => {
             bubblesBodies.forEach(({ body, h }) => {
                 const radius = h / 2;
@@ -109,7 +113,7 @@ export const useMatterPhysics = (
             });
         });
 
-        // 5. Синхронизация DOM
+        // 5. Синхронизация
         Events.on(engine, "afterUpdate", () => {
             bubblesBodies.forEach(({ id, body, w, h }) => {
                 const el = elementsMap.current.get(id);
@@ -121,16 +125,36 @@ export const useMatterPhysics = (
             });
         });
 
+        // 6. Обработка ресайза (поворот экрана)
+        const handleResize = () => {
+            if (!containerRef.current) return;
+            const newWidth = containerRef.current.clientWidth;
+            const newHeight = containerRef.current.clientHeight;
+
+            // Обновляем позиции стен
+            Body.setPosition(ground, { x: newWidth / 2, y: newHeight + wallThickness / 2 - 10 });
+            Body.setPosition(ceiling, { x: newWidth / 2, y: -wallThickness / 2 });
+            Body.setPosition(wallLeft, { x: 0 - wallThickness / 2, y: newHeight / 2 });
+            Body.setPosition(wallRight, { x: newWidth + wallThickness / 2, y: newHeight / 2 });
+            
+            // Можно также обновить геометрию стен (vertices), если высота сильно меняется, 
+            // но для прямоугольников достаточно переместить центр, если они достаточно длинные.
+            // У нас wallHeight = height * 2, этого должно хватить.
+        };
+
+        window.addEventListener('resize', handleResize);
+
         setIsReady(true);
 
         return () => {
+            window.removeEventListener('resize', handleResize);
             Runner.stop(runner);
             Matter.Engine.clear(engine);
             Matter.Composite.clear(engine.world, false);
             engineRef.current = null;
             runnerRef.current = null;
         };
-    }, [items]); // Зависимость от items, чтобы перезапускать при изменении данных (если нужно)
+    }, [items]);
 
     return { isReady };
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import Matter from "matter-js";
 import { 
     Heart, Repeat, Users, Eye, FileText, Send, MessageCircle, BarChart3, 
@@ -25,6 +25,9 @@ export const FallingTags = () => {
     const elementsRef = useRef<Map<string, HTMLDivElement>>(new Map());
     const engineRef = useRef<Matter.Engine | null>(null);
     const runnerRef = useRef<Matter.Runner | null>(null);
+    
+    // Состояние для принудительного перезапуска при ресайзе
+    const [sceneKey, setSceneKey] = useState(0);
 
     const items = useMemo(() => {
         return Array.from({ length: 35 }).map((_, i) => {
@@ -36,11 +39,33 @@ export const FallingTags = () => {
         });
     }, []);
 
+    // Слушатель ресайза: если окно меняется, перезапускаем физику, 
+    // чтобы "твердые тела" (bodies) подстроились под новые визуальные размеры тэгов
+    useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
+        const handleResize = () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                setSceneKey(prev => prev + 1);
+            }, 300); // Debounce
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     useEffect(() => {
         if (!sceneRef.current) return;
+        
+        // Если экран 500px или меньше, не запускаем физику вообще
+        if (window.innerWidth <= 500) return;
 
         const initTimeout = setTimeout(() => {
             if (!sceneRef.current) return;
+
+            // Очистка предыдущего инстанса, если он был
+            if (engineRef.current) Matter.Engine.clear(engineRef.current);
+            if (runnerRef.current) Matter.Runner.stop(runnerRef.current);
 
             const { Engine, Runner, Bodies, Composite, Events, Body } = Matter;
 
@@ -78,6 +103,8 @@ export const FallingTags = () => {
                 const el = elementsRef.current.get(item.id);
                 if (!el) return;
 
+                // Matter.js берет размеры прямо из DOM. 
+                // Благодаря CSS медиа-запросам, offsetWidth тут будет уже уменьшенным.
                 const w = el.offsetWidth;
                 const h = el.offsetHeight;
 
@@ -132,12 +159,13 @@ export const FallingTags = () => {
             if (runnerRef.current) Matter.Runner.stop(runnerRef.current);
             if (engineRef.current) Matter.Engine.clear(engineRef.current);
         };
-    }, [items]);
+    }, [items, sceneKey]); // sceneKey заставляет эффект перезапуститься при ресайзе
 
     return (
         <div 
             ref={sceneRef} 
-            className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none z-0"
+            // Добавлено: max-[500px]:hidden - скрывает весь блок на мобильных
+            className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none z-0 max-[500px]:hidden"
         >
             {items.map((item) => (
                 <div
@@ -145,11 +173,27 @@ export const FallingTags = () => {
                     ref={(el) => {
                         if (el) elementsRef.current.set(item.id, el);
                     }}
-                    className={`absolute left-0 top-0 flex items-center gap-3 px-7 py-3.5 rounded-full shadow-lg will-change-transform ${item.className}`}
+                    // ИЗМЕНЕНИЯ ЗДЕСЬ:
+                    // 1. px/py и gap уменьшены вдвое по умолчанию (для 500-1024px)
+                    // 2. lg: (для > 1024px) возвращают оригинальные большие размеры
+                    className={`
+                        absolute left-0 top-0 flex items-center rounded-full shadow-lg will-change-transform 
+                        
+                        gap-1.5 px-3.5 py-2 
+                        lg:gap-3 lg:px-7 lg:py-3.5
+                        
+                        ${item.className}
+                    `}
                     style={{ transform: "translate3d(-500px, -500px, 0)" }}
                 >
-                    <item.icon size={24} strokeWidth={2.5} />
-                    <span className="text-[20px] font-bold leading-none pb-0.5">
+                    {/* Иконка: размеры через Tailwind классы вместо size prop */}
+                    <item.icon 
+                        strokeWidth={2.5} 
+                        className="w-3 h-3 lg:w-6 lg:h-6"
+                    />
+                    
+                    {/* Текст: размер 10px для планшетов, 20px для десктопа */}
+                    <span className="font-bold leading-none pb-0.5 text-[10px] lg:text-[20px]">
                         {item.text}
                     </span>
                 </div>

@@ -64,18 +64,18 @@ export const ChannelCard = ({
                 />
 
                 <div>
-                    <p className="mb-1.5 text-[28px] font-medium leading-tight line-clamp-2">
+                    <p className="mb-1.5 lg:text-[28px] text-[20px] font-medium leading-tight line-clamp-2">
                         {name}
                     </p>
 
                     <div className="flex items-center gap-1.5">
                         <span 
                             style={{ backgroundColor: category.color }}
-                            className="w-[9px] h-[9px] rounded-full"
+                            className="lg:w-[9px] w-1.5 lg:h-[9px] h-1.5 rounded-full"
                         />
                         <p
                             style={{ color: category.color }}
-                            className="font-medium"
+                            className="font-medium text-[14px] lg:text-[16px]"
                         >
                             {category.name}
                         </p>

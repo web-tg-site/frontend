@@ -5,7 +5,7 @@ import { ChannelBadge } from "../channel-badge";
 import { Numbers, Text } from "@/shared/ui/text";
 
 export const Channels = () => (
-    <div className="col-span-12 md:col-span-5">
+    <div className="col-span-1 min-[1025px]:col-span-5">
         <WeCard>
             <div className="pt-10 pb-[62px] w-full overflow-hidden">
                 <Marquee speed={40} pauseOnHover={true}>

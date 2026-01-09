@@ -37,7 +37,7 @@ export const MyCollection = () => {
                         href={`/my-collections/${collection.id}`}
                         className="group cursor-pointer block"
                     >
-                        <div className="relative aspect-square h-[322px] overflow-hidden rounded-[20px] bg-[#1E1E1E]">
+                        <div className="relative aspect-square h-auto overflow-hidden rounded-[20px] bg-[#1E1E1E]">
                             {collection.image ? (
                                 <Image 
                                     src={collection.image} 

@@ -9,7 +9,7 @@ export const FrequencyCard = ({
 }) => {
     return (
         <GridCard title="Частота потребления" className={className}>
-            <p className="text-[22px] leading-[110%] text-black/60 max-h-18">
+            <p className="lg:text-[22px] text-[16px] leading-[110%] text-black/60 max-h-18">
                 {text}
             </p>
         </GridCard>

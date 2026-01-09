@@ -45,7 +45,7 @@ export const PersonalSelection = () => {
                 <FallingTags />
 
                 <div className="relative z-10 px-7.5">
-                    <Headline variant="h2" className="max-w-[1000px] font-normal leading-tight mb-13">
+                    <Headline variant="h2" className="max-w-[1000px] font-normal leading-tight mb-13 text-[30px] min-[500px]:text-[60px] lg:text-[100px]">
                         Персональная подборка каналов для
                         <BrandBadge 
                             text="SlayMedia" 
@@ -53,7 +53,7 @@ export const PersonalSelection = () => {
                         />
                     </Headline>
 
-                    <p className="max-w-[1000px] text-white/70 leading-[120%] text-[24px]"> 
+                    <p className="max-w-[1000px] text-white/70 leading-[120%] lg:text-[24px] min-[500px]:text-[20px] text-[14px] "> 
                         Эта подборка сформирована специально под ваш проект, целевую аудиторию и бюджет. Все рекомендации и цены адаптированы под конкретную рекламную задачу
                     </p>
                 </div>
@@ -65,8 +65,8 @@ export const PersonalSelection = () => {
                     Анализ вашей ниши
                 </Headline>
 
-                <div className="grid grid-cols-3 gap-2.5">
-                    <WhiteBlockTemplate>
+                <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 lg:gap-2.5 gap-y-6 gap-x-2.5">
+                    <WhiteBlockTemplate className="lg:col-span-1 md:col-span-2 col-span-1">
                         <Title variant="h1" className="mb-6 text-black">
                             Цель рекламной кампании 
                         </Title>
@@ -142,7 +142,7 @@ export const PersonalSelection = () => {
                     Наша подборка для вас 
                 </Title>
 
-                <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="grid lg:grid-cols-3 min-[500px]:grid-cols-2 grid-cols-1 gap-4 mb-8">
                     {CHANNEL_MOCK.map((channel, idx) => (
                         <ChannelCard 
                             key={idx}
@@ -153,13 +153,13 @@ export const PersonalSelection = () => {
                 </div>
 
                 <div className="flex justify-between items-center">
-                    <Title className="text-white/60 text-[36px] font-medium">
+                    <Title className="text-white/60 lg:text-[36px] min-[500px]:text-[20px] text-[16px] font-medium">
                         Итоговая стоимость
                     </Title>
 
                     <AnimatedCounter 
                         value={totalPrice} 
-                        className="text-white text-[36px] font-medium"
+                        className="text-white lg:text-[36px] min-[500px]:text-[28px] text-[20px] font-medium"
                     />
                 </div>
             </div>

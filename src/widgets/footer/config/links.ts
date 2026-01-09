@@ -9,12 +9,4 @@ export const LINKS: FooterLinkProps[] = [
         text: 'Каталог',
         href: '/catalog',
     },
-    {
-        text: 'Контакты',
-        href: '/contacts',
-    },
-    {
-        text: 'Соц.сети',
-        href: '/socials',
-    },
 ];

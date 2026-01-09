@@ -3,4 +3,5 @@ export interface SendApplicationFormData {
     phone: string;
     telegram: string;
     comment: string;
+    isAgreed?: boolean;
 }

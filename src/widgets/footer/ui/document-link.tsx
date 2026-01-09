@@ -8,7 +8,7 @@ export const DocumentLink = ({
     return (
         <Link
             href={href}
-            className="text-white/60 leading-[110%] cursor-pointer transition hover:text-white"
+            className="text-white/60 leading-[110%] cursor-pointer transition hover:text-white lg:text-[16px] text-[12px]"
         >
             {text}
         </Link>

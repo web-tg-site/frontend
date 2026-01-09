@@ -6,66 +6,61 @@ interface ChannelData {
     name: string;
     region: string;
     subscribers: string;
+    label: string;
     price: string;
     iconUrl: string;
     coords: {
-        top: number;  // % отступа сверху
-        left: number; // % отступа слева
+        top: number;
+        left: number;
     };
 }
 
-// Данные (координаты примерные, подгоните под свою карту)
 const CHANNELS: ChannelData[] = [
     {
         id: 1,
         name: "Новости Москвы",
         region: "Москва",
-        subscribers: "150k",
+        subscribers: "150к",
+        label: "Подписчиков",
         price: "15 000 ₽",
-        iconUrl: "https://via.placeholder.com/60",
+        iconUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&h=300",
         coords: { top: 38, left: 18 },
     },
     {
         id: 2,
         name: "Питер Live",
         region: "Санкт-Петербург",
-        subscribers: "95k",
+        subscribers: "95к",
+        label: "Подписчиков",
         price: "10 000 ₽",
-        iconUrl: "https://via.placeholder.com/60",
+        iconUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&h=300",
         coords: { top: 32, left: 12 },
     },
     {
         id: 3,
         name: "Екатеринбург ЧП",
         region: "Екатеринбург",
-        subscribers: "45k",
+        subscribers: "45к",
+        label: "Подписчиков",
         price: "5 500 ₽",
-        iconUrl: "https://via.placeholder.com/60",
+        iconUrl: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=300&h=300",
         coords: { top: 55, left: 35 },
     },
 ];
 
 export const Map = () => {
     return (
-        // Родительский контейнер может быть любой ширины. Карта подстроится.
         <div className="w-full relative">
-            
-            {/* 
-                Картинка карты.
-                width: 100% и height: auto обеспечивают сохранение пропорций.
-                Убраны fill и aspect-ratio, теперь размеры зависят от самой картинки.
-            */}
             <Image
                 src="/map.png"
                 alt="Карта регионов"
                 width={0}
                 height={0}
                 sizes="100vw"
-                className="w-full h-auto block select-none"
+                className="w-full h-auto block select-none pointer-events-none"
                 priority
             />
 
-            {/* Рендерим точки поверх карты */}
             {CHANNELS.map((channel) => (
                 <MapPin key={channel.id} data={channel} />
             ))}
@@ -76,60 +71,70 @@ export const Map = () => {
 const MapPin = ({ data }: { data: ChannelData }) => {
     return (
         <div
-            className="absolute group z-10"
+            className="absolute z-10 hover:z-50"
             style={{
                 top: `${data.coords.top}%`,
                 left: `${data.coords.left}%`,
             }}
         >
             {/* 
-                --- ВИЗУАЛ ПИНА --- 
+                Пин
+                duration-500 + ease-out (cubic-bezier) для "пружинного" эффекта
             */}
-            <div className="relative -translate-x-1/2 -translate-y-[115%] cursor-pointer drop-shadow-md transition-transform duration-300 hover:scale-110 hover:z-50 hover:drop-shadow-xl">
-                {/* Синяя форма капли */}
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#3B82F6] rounded-full rounded-br-none rotate-45 flex items-center justify-center p-1">
-                    {/* Аватарка (повернута обратно) */}
-                    <div className="-rotate-45 w-full h-full rounded-full overflow-hidden bg-white border-[2px] border-[#3B82F6]">
+            <div className="absolute bottom-0 right-0 w-32 h-32 sm:w-48 sm:h-48 origin-bottom-right transform rotate-45 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] scale-[0.27] hover:scale-100 cursor-pointer group drop-shadow-md hover:drop-shadow-2xl will-change-transform">
+                
+                {/* Рамка */}
+                <div className="w-full h-full bg-[#3B82F6] rounded-full rounded-br-none p-[3px] sm:p-1.5 shadow-lg">
+                    
+                    {/* Контент (-45 deg) */}
+                    <div className="relative w-full h-full bg-white rounded-full overflow-hidden -rotate-45 shadow-inner isolate">
+                        
                         <img 
                             src={data.iconUrl} 
                             alt={data.name} 
                             className="w-full h-full object-cover"
                         />
-                    </div>
-                </div>
-            </div>
 
-            {/* 
-                --- ВСПЛЫВАШКА (TOOLTIP) --- 
-                Изменено: mb-20 (было mb-4). 
-                Это поднимает окно на 5rem (80px) от точки привязки, чтобы не перекрывать пин.
-            */}
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-20 sm:mb-24 w-60 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-50">
-                <div className="bg-white rounded-lg shadow-xl p-3 text-sm border border-gray-100">
-                    
-                    {/* Хедер тултипа */}
-                    <div className="flex items-center gap-2 mb-3 border-b border-gray-100 pb-2">
-                        <img src={data.iconUrl} className="w-8 h-8 rounded-full shadow-sm" alt="" />
-                        <div className="overflow-hidden">
-                            <h4 className="font-bold text-gray-800 truncate leading-tight text-base">{data.name}</h4>
-                            <span className="text-xs text-gray-400">{data.region}</span>
+                        {/* 
+                            Обертка для центрирования плашки.
+                            Убрали opacity и delay отсюда, чтобы не было "ступеньки".
+                        */}
+                        <div className="absolute inset-0 flex items-center justify-center z-20">
+                            
+                            {/* 
+                                ПЛАШКА С ИСПРАВЛЕННОЙ АНИМАЦИЕЙ
+                                
+                                1. scale-50 -> group-hover:scale-100:
+                                   Плашка "вырастает" вместе с пином, а не просто появляется.
+                                
+                                2. backdrop-blur-none -> group-hover:backdrop-blur-md:
+                                   Мы анимируем само размытие! Оно плавно меняется от 0px до нужного значения.
+                                
+                                3. transition-all duration-500:
+                                   Синхронизировано с открытием пина.
+                            */}
+                            <div className="
+                                bg-black/40 
+                                rounded-full px-4 py-2 text-center border border-white/20 shadow-xl shadow-black/10
+                                
+                                opacity-0 group-hover:opacity-100 
+                                scale-50 group-hover:scale-100
+                                backdrop-blur-none group-hover:backdrop-blur-md
+                                
+                                transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
+                                origin-center
+                                will-change-[transform,opacity,backdrop-filter]
+                            ">
+                                <div className="text-white font-medium text-lg sm:text-2xl leading-none">
+                                    {data.subscribers}
+                                </div>
+                                <div className="text-gray-200 text-[10px] sm:text-xs leading-none mt-1 font-light">
+                                    {data.label}
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Статистика */}
-                    <div className="grid grid-cols-2 gap-2 text-center">
-                        <div className="bg-gray-50 rounded-md p-1.5">
-                            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Подписчики</div>
-                            <div className="font-bold text-gray-900 text-sm">{data.subscribers}</div>
-                        </div>
-                        <div className="bg-blue-50 rounded-md p-1.5">
-                            <div className="text-[10px] text-blue-500 font-bold uppercase tracking-wide">Цена</div>
-                            <div className="font-bold text-blue-600 text-sm">{data.price}</div>
-                        </div>
                     </div>
-
-                    {/* Стрелочка тултипа */}
-                    <div className="absolute left-1/2 -bottom-1.5 -translate-x-1/2 w-3 h-3 bg-white rotate-45 border-b border-r border-gray-100"></div>
                 </div>
             </div>
         </div>

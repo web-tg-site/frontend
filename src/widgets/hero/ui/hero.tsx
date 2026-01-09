@@ -7,7 +7,7 @@ import { Headline } from "@/shared/ui/text"
 
 export const Hero = () => {
     return (
-        <div className="w-full h-screen relative overflow-hidden flex flex-col">
+        <section className="w-full h-screen relative overflow-hidden flex flex-col">
             <Background />
 
             <div className="absolute inset-0 z-10 pointer-events-none">
@@ -16,7 +16,7 @@ export const Hero = () => {
 
             <div className="pt-32 flex flex-col justify-center items-center z-40 relative pointer-events-none">
                 <div className="pointer-events-auto flex flex-col items-center">
-                    <Headline variant="h3" className="text-center mb-10">
+                    <Headline variant="h3" className="text-center mb-10 xl:text-[80px] lg:text-[56px]">
                         Подбор телеграм-каналов под<br/>вашу нишу
                     </Headline>
                     <LinkButton href='/#orderSelection'>
@@ -25,12 +25,12 @@ export const Hero = () => {
                 </div>
             </div>
 
-            <div className="absolute bottom-0 left-0 w-full flex justify-center pointer-events-none">
+            <div className="absolute bottom-0 left-0 w-full flex justify-center pointer-events-none max-[500px]:hidden">
                 <TelegramPhone 
                     items={CHANNELS_DATA}
                     className="z-30 hover:z-50 transition-all duration-300" 
                 />
             </div>
-        </div>
+        </section>
     )
 }

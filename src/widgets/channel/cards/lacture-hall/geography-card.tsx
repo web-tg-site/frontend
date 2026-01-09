@@ -37,7 +37,7 @@ export const GeographyCard = ({
     return (
         <GridCard title="География" className={className}>
             <motion.div 
-                className="grid grid-cols-4 gap-4"
+                className="grid lg:grid-cols-4 grid-cols-2 gap-4"
                 variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"
@@ -52,11 +52,13 @@ export const GeographyCard = ({
                         key={idx}
                         variants={itemVariants}
                     >
-                        <div className="rounded-full bg-[#FF8D28] h-10 w-10 min-w-10 flex items-center justify-center shrink-0">
-                            <GroupIcon />
+                        <div className="rounded-full bg-[#FF8D28] lg:h-10 h-6 lg:w-10 w-6 lg:min-w-10 flex items-center justify-center shrink-0">
+                            <GroupIcon 
+                                className="lg:w-6 lg:h-6 w-3.5 h-3.5"
+                            />
                         </div>
 
-                        <p className="text-2xl font-medium leading-[90%]">
+                        <p className="lg:text-2xl text-[14px] font-medium leading-[90%]">
                             {item.name} ({item.percent}%) 
                         </p>
                     </motion.div>

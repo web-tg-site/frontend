@@ -7,10 +7,15 @@ import { Heart } from "lucide-react"
 import { useCollections } from "@/shared/store/use-collections"
 import { TopCard, LectureHall, Content, PriceAdd } from "@/widgets/channel"
 import Image from "next/image"
+import { ChannelHeaderCards } from "@/widgets/channel/ui/header-cards"
 
 const MOCK_ID = 1;
 
-export const Channel = () => {
+export const Channel = ({
+    id
+}: {
+    id: string
+}) => {
     const openModal = useCollections((state) => state.openModal)
     
     const crumbs: CrumbItem[] = [
@@ -39,13 +44,21 @@ export const Channel = () => {
                     className="mb-7"
                 />
 
-                <div className="flex flex-col lg:flex-row gap-[51px] items-start">
+                <div className="flex gap-[51px] items-start">
                     <div className="flex-1">
-                        <Headline variant="h4" className="mb-7">
+                        <Headline variant="h4" className="mb-4 lg:mb-7">
                             Критик в шёлковом халате
                         </Headline>
 
-                        <Text className="text-white/70 mb-9">
+                        <div className="hidden max-[500px]:block mb-4">
+                            <ChannelHeaderCards 
+                                subs="200к"
+                                coast="20 000 ₽"
+                                image="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=200&auto=format&fit=crop"
+                            />
+                        </div>
+
+                        <Text className="text-white/70 lg:mb-9 mb-7">
                             Телеграм-канал о красоте без иллюзий и рекламы. Честные разборы бьюти-трендов, средств и процедур, эстетика ухода и ироничный взгляд на индустрию. Коротко, по делу и со вкусом
                         </Text>
 
@@ -57,23 +70,11 @@ export const Channel = () => {
                         </LinkButton>
                     </div>
 
-                    <div className="flex items-center gap-2.5 shrink-0 overflow-x-auto max-w-full pb-2 lg:pb-0">
-                        <TopCard 
-                            title="200к"
-                            desc="Подписчиков"
-                        />
-
-                        <TopCard 
-                            title="20000р"
-                            desc="Стоимость"
-                        />
-
-                        <Image 
-                            width={150}
-                            height={121}
-                            className="rounded-[28px] h-[121px] w-[150px] object-cover shrink-0"
-                            src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=200&auto=format&fit=crop"
-                            alt="Фото"
+                    <div className="block max-[500px]:hidden">
+                        <ChannelHeaderCards 
+                            subs="200к"
+                            coast="20 000 ₽"
+                            image="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=200&auto=format&fit=crop"
                         />
                     </div>
                 </div>

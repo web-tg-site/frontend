@@ -1,7 +1,9 @@
 import { Channel } from '@/page/channel'
 
-export default function Page() {
+export default async function Page({params}: {params: Promise<{id: string}>}) {
+    const { id } = await params;
+    
     return (
-        <Channel />
+        <Channel id={id} />
     )
 }

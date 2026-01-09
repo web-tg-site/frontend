@@ -11,7 +11,7 @@ interface AnimatedCounterProps {
 export const AnimatedCounter = ({ value, className }: AnimatedCounterProps) => {
     // 1. Форматируем число (например "1 200 000")
     // 2. Добавляем " руб" в конец
-    const fullText = `${formatPrice(value)} руб`;
+    const fullText = `${formatPrice(value)} ₽`;
     
     // 3. Разбиваем всю строку (цифры + пробелы + "руб") на символы
     const chars = fullText.split("");

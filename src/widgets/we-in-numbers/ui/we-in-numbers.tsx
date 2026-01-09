@@ -8,8 +8,8 @@ export const WeInNumber = () => {
             <Headline variant="h4" className="text-black text-center mb-11.5">
                 Мы в цифрах
             </Headline>
-
-            <div className="grid grid-cols-12 gap-2.5 w-full">
+            
+            <div className="grid grid-cols-1 min-[501px]:grid-cols-2 min-[1025px]:grid-cols-12 gap-2.5 w-full">
                 <Channels />
                 <Niches />
                 <Cities />

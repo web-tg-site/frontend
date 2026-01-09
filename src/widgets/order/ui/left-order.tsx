@@ -26,14 +26,14 @@ export const LeftOrder = () => {
     const sceneRef = useRef<HTMLDivElement>(null);
     const bubbleElements = useRef<Map<number, HTMLDivElement>>(new Map());
 
-    // Вся логика физики теперь здесь:
+    // Логика физики (хук приведен ниже)
     const { isReady } = useMatterPhysics(sceneRef, TAGS_DATA, bubbleElements);
 
     return (
-        <div className="bg-primary rounded-2xl min-h-[785px] h-full relative overflow-hidden flex flex-col select-none">
+        <div className="bg-primary rounded-2xl min-h-[500px] lg:min-h-[785px] h-full relative overflow-hidden flex flex-col select-none">
             {/* Текст */}
-            <div className="relative z-10 pt-10 pl-10 pr-10 pointer-events-none">
-                <Headline variant="h3" className="text-white mb-4">
+            <div className="relative z-10 pt-6 pl-6 pr-6 lg:pt-10 lg:pl-10 lg:pr-10 pointer-events-none">
+                <Headline variant="h3" className="text-white mb-4 text-2xl lg:text-4xl">
                     Заказать<br />
                     бесплатный подбор<br />
                     каналов под ваши<br />
@@ -42,7 +42,13 @@ export const LeftOrder = () => {
             </div>
             
             {/* Сцена */}
-            <div ref={sceneRef} className="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing">
+            <div 
+                ref={sceneRef} 
+                className="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"
+                // Важно: отключаем стандартный скролл браузера внутри этой области, 
+                // чтобы палец управлял физикой, а не скроллил страницу
+                style={{ touchAction: 'none' }} 
+            >
                 {TAGS_DATA.map((tag) => (
                     <div
                         key={tag.id}
@@ -51,12 +57,13 @@ export const LeftOrder = () => {
                         }}
                         className={cn(
                             "absolute top-0 left-0",
-                            "flex items-center gap-4 px-8 py-4 rounded-full",
-                            "border-2 border-white bg-transparent",
-                            "text-white font-semibold select-none whitespace-nowrap",
-                            "text-2xl",
+                            "flex items-center rounded-full",
+                            "bg-transparent text-white font-semibold select-none whitespace-nowrap",
                             "transition-colors hover:bg-white/10",
-                            // Показываем элементы только когда физика готова
+                            "gap-2 px-3 py-2 border", // Меньше отступы, тоньше рамка
+                            "text-sm",                // Меньше текст
+                            "lg:gap-4 lg:px-8 lg:lg:py-4 lg:border-2",
+                            "lg:text-2xl",
                             !isReady && "opacity-0" 
                         )}
                         style={{
@@ -65,7 +72,8 @@ export const LeftOrder = () => {
                             willChange: 'transform'
                         }}
                     >
-                        <tag.icon size={28} strokeWidth={2} />
+                        {/* Иконка тоже адаптивная */}
+                        <tag.icon className="w-4 h-4 lg:w-7 lg:h-7" strokeWidth={2} />
                         <span>{tag.title}</span>
                     </div>
                 ))}

@@ -4,10 +4,13 @@ import { LandingBlock } from "@/shared/ui"
 import { Headline, Text } from "@/shared/ui/text"
 import { BOTTOM_SERVICE, TOP_SERVICE } from "../config/service"
 import { OurServiceCard } from "./our-service-card"
-import { motion, Variants } from "framer-motion"
-import { containerVariants } from "../config/animation";
+import { motion } from "framer-motion"
+import { containerVariants } from "../config/animation"
+import { cn } from "@/shared/utils"
 
 export const OurService = () => {
+    const allServices = [...TOP_SERVICE, ...BOTTOM_SERVICE]
+
     return (
         <LandingBlock className="py-12.5 px-7.5 mb-2">
             <motion.div
@@ -27,9 +30,29 @@ export const OurService = () => {
                 </div>
             </motion.div>
 
+            <motion.div
+                className="grid grid-cols-2 gap-2.5 min-[501px]:hidden"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+            >
+                {allServices.map((service, idx) => (
+                    <div 
+                        key={idx} 
+                        className={cn(
+                            "col-span-1",
+                            idx === 4 && "col-span-2"
+                        )}
+                    >
+                        <OurServiceCard {...service} />
+                    </div>
+                ))}
+            </motion.div>
+            
             {/* Верхний ряд */}
             <motion.div 
-                className="grid grid-cols-3 gap-2.5 mb-2.5"
+                className="hidden min-[501px]:grid grid-cols-3 gap-2.5 mb-2.5"
                 variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"
@@ -42,7 +65,7 @@ export const OurService = () => {
 
             {/* Нижний ряд */}
             <motion.div 
-                className="grid grid-cols-2 gap-2.5"
+                className="hidden min-[501px]:grid grid-cols-2 gap-2.5"
                 variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"

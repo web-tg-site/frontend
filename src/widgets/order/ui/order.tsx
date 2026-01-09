@@ -3,7 +3,7 @@ import { LeftOrder } from "./left-order"
 
 export const Order = () => {
     return (
-        <section className="grid grid-cols-2 gap-2.5" id="orderSelection">
+        <section className="grid lg:grid-cols-2 grid-cols-1 gap-2.5" id="orderSelection">
             <LeftOrder />
 
             <SendApplicationForm 

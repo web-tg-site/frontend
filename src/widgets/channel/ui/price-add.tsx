@@ -35,7 +35,7 @@ export const PriceAdd = () => {
             </Title>
 
             <motion.div 
-                className="grid grid-cols-3 gap-2.5"
+                className="grid lg:grid-cols-3 gap-2.5"
                 variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"

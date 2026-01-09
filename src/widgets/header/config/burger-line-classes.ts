@@ -1,0 +1,1 @@
+export const BURGER_LINE_CLASS = "w-7 h-px bg-white rounded-[14px]";

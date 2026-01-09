@@ -18,7 +18,7 @@ export const GridCard = ({
                 className
             )}
         >
-            <Title variant="h2" className="mb-4.5 text-black">
+            <Title variant="h2" className="lg:mb-4.5 mb-2.5 text-black">
                 {title}
             </Title>
 
