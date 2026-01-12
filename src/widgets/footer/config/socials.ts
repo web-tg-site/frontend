@@ -9,7 +9,7 @@ export const SOCIALS = [
     },
     {
         icon: VK,
-        href: 'https://vk.com/',
+        href: 'https://vk.ru/swaymedia',
         name: 'VK',
         hoverClass: 'hover:text-[#0077FF]', 
     },

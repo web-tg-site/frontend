@@ -17,9 +17,7 @@ export const SocialLink = ({
         >
             <Icon 
                 className={cn(
-                    // Базовый transition для плавности
                     "transition-colors duration-300 ease-in-out",
-                    // Применяем уникальный цвет при наведении (он перебьет text-white)
                     hoverClass
                 )} 
             />

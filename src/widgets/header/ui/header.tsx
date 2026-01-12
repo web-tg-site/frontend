@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { LinkButton } from "@/shared/ui";
 import { CollectionButton } from "./collection-button";
-import { BurgerMenu } from "./buger-menu";
 
 export const Header = () => {
     return (
@@ -17,15 +16,17 @@ export const Header = () => {
                 />
             </Link>
 
-            <div className="lg:flex items-center gap-[6.5px] hidden">
+            <div className="flex items-center gap-[6.5px]">
                 <CollectionButton />
                 
-                <LinkButton href='/catalog'>
+                <LinkButton href='/catalog' className="hidden min-[500px]:block">
                     Перейти в каталог
                 </LinkButton>
-            </div>
 
-            <BurgerMenu />
+                <LinkButton href='/catalog' className="block min-[500px]:hidden">
+                    В каталог
+                </LinkButton>
+            </div>
         </header>
     )
 }
