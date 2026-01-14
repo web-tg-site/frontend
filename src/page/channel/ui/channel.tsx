@@ -5,8 +5,7 @@ import { Category } from "@/shared/ui/category"
 import { CrumbItem, Crumbs } from "@/shared/ui/crumbs"
 import { Heart } from "lucide-react"
 import { useCollections } from "@/shared/store/use-collections"
-import { TopCard, LectureHall, Content, PriceAdd } from "@/widgets/channel"
-import Image from "next/image"
+import { LectureHall, Content, PriceAdd } from "@/widgets/channel"
 import { ChannelHeaderCards } from "@/widgets/channel/ui/header-cards"
 
 const MOCK_ID = 1;

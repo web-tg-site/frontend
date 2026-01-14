@@ -1,6 +1,24 @@
 import { LandingBlock, Title } from "@/shared/ui"
 import { ChannelEngagementCard, ConsumptionCard, FrequencyCard, GeographyCard, HowReadCard, Interests, ReactionCard } from "../cards/lacture-hall"
 
+// interface LectureHall {
+//     activePercentage: number,
+//     statsData: {
+//         likes: number,
+//         comments: number,
+//         reposts: number,
+//     },
+//     interestsItems: string[],
+//     geographyItems: {
+//         name: string,
+//         percent: number
+//     }[],
+//     consumption: string,
+//     howRead: string,
+//     reaction: string,
+//     frequency: string
+// }
+
 export const LectureHall = () => {
     const statsData = {
         likes: 40,

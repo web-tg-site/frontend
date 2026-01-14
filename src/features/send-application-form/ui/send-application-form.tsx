@@ -4,10 +4,12 @@ import { useState } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3"
 
 import { SendApplicationFormProps } from "../types/send-application-form.props"
 import { SendApplicationFormData } from "../types/send-application-form-data"
 import { SendApplication } from "../api/send-application"
+import { GoogleRecaptchaProvider } from "@/shared/providers" // Импорт вашего провайдера
 
 import { cn } from "@/shared/utils"
 import { Text, Title } from "@/shared/ui/text"
@@ -15,16 +17,18 @@ import { Checkbox, Input } from "@/shared/ui/form"
 import { LinkButton } from "@/shared/ui/link-button"
 import { variants } from "../config/animation-variants"
 
-
-export const SendApplicationForm = ({ className = "" }: SendApplicationFormProps) => {
+const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps) => {
     const [isLoading, setIsLoading] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
+
+    const { executeRecaptcha } = useGoogleReCaptcha()
 
     const {
         register,
         control,
         handleSubmit,
         reset,
+        setError,
         formState: { errors }
     } = useForm<SendApplicationFormData>({
         defaultValues: {
@@ -39,9 +43,26 @@ export const SendApplicationForm = ({ className = "" }: SendApplicationFormProps
     const onSubmit = async (data: SendApplicationFormData) => {
         setIsLoading(true)
 
-        const { isAgreed, ...payload } = data
-
         try {
+            if (!executeRecaptcha) {
+                return
+            }
+
+            const token = await executeRecaptcha("submit_application")
+
+            const checkResponse = await fetch('/api/check-captcha', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            })
+
+            if (!checkResponse.ok) {
+                setError("root", { message: "Не удалось пройти проверку безопасности" })
+                throw new Error("Captcha validation failed")
+            }
+
+            const { isAgreed, ...payload } = data
+
             await SendApplication({
                 ...payload,
                 comment: payload.comment || ""
@@ -95,6 +116,12 @@ export const SendApplicationForm = ({ className = "" }: SendApplicationFormProps
                         </Text>
 
                         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
+                            {errors.root && (
+                                <div className="p-3 mb-4 bg-red-500/20 text-white rounded-md text-sm">
+                                    {errors.root.message}
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-1 gap-2.5 mb-6">
                                 <Input
                                     placeholder="Имя"
@@ -198,6 +225,12 @@ export const SendApplicationForm = ({ className = "" }: SendApplicationFormProps
                                 </Link>
                             </Checkbox>
 
+                            <div className="text-[10px] text-white/50 mb-4 eading-tight">
+                                This site is protected by reCAPTCHA and the Google{' '}
+                                <a href="https://policies.google.com/privacy" className="underline hover:text-white" target="_blank" rel="noreferrer">Privacy Policy</a> and{' '}
+                                <a href="https://policies.google.com/terms" className="underline hover:text-white" target="_blank" rel="noreferrer">Terms of Service</a> apply.
+                            </div>
+
                             <LinkButton
                                 type="submit"
                                 loading={isLoading}
@@ -212,5 +245,13 @@ export const SendApplicationForm = ({ className = "" }: SendApplicationFormProps
                 )}
             </AnimatePresence>
         </div>
+    )
+}
+
+export const SendApplicationForm = (props: SendApplicationFormProps) => {
+    return (
+        <GoogleRecaptchaProvider>
+            <SendApplicationFormContent {...props} />
+        </GoogleRecaptchaProvider>
     )
 }
