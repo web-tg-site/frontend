@@ -16,7 +16,6 @@ export const viewport: Viewport = {
   themeColor: "#1A1A1A",
 };
 
-// ВАЖНО: Замените на ваш реальный домен, когда задеплоите (нужно для корректного отображения картинки в ТГ)
 const DOMAIN = "https://sway.pro"; 
 
 export const metadata: Metadata = {
@@ -36,7 +35,6 @@ export const metadata: Metadata = {
     "персональная подборка",
     "закупка рекламы",
   ],
-  // Настройки для соцсетей (Telegram, VK, FB)
   openGraph: {
     title: "Sway",
     description: "Сервис по продаже рекламы в Telegram каналах и создание подборок.",

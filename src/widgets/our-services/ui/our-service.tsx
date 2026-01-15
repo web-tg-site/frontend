@@ -30,27 +30,24 @@ export const OurService = () => {
                 </div>
             </motion.div>
 
+            {/* 
+                МОБИЛЬНАЯ ВЕРСТКА:
+                1. grid-cols-1 (было grid-cols-2)
+                2. Убрали обертку div с col-span, теперь просто рендерим карточку
+            */}
             <motion.div
-                className="grid grid-cols-2 gap-2.5 min-[501px]:hidden"
+                className="grid grid-cols-1 gap-2.5 min-[501px]:hidden"
                 variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
             >
                 {allServices.map((service, idx) => (
-                    <div 
-                        key={idx} 
-                        className={cn(
-                            "col-span-1",
-                            idx === 4 && "col-span-2"
-                        )}
-                    >
-                        <OurServiceCard {...service} />
-                    </div>
+                    <OurServiceCard key={idx} {...service} />
                 ))}
             </motion.div>
             
-            {/* Верхний ряд */}
+            {/* Верхний ряд (Планшет/ПК) */}
             <motion.div 
                 className="hidden min-[501px]:grid grid-cols-3 gap-2.5 mb-2.5"
                 variants={containerVariants}
@@ -63,7 +60,7 @@ export const OurService = () => {
                 ))}
             </motion.div>
 
-            {/* Нижний ряд */}
+            {/* Нижний ряд (Планшет/ПК) */}
             <motion.div 
                 className="hidden min-[501px]:grid grid-cols-2 gap-2.5"
                 variants={containerVariants}

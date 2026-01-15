@@ -20,8 +20,6 @@ export const Advantages = () => {
         tabletPairs.push(ADVANTAGE_ITEMS.slice(i, i + 2))
     }
 
-    // 3. Данные для МОБИЛКИ (<= 500px) - берем просто исходный массив ADVANTAGE_ITEMS
-
     const EmptyCard = () => <AdvantageCard num={0} color="" text="" empty />
 
     return (
@@ -32,16 +30,17 @@ export const Advantages = () => {
 
             {/* ======================================================= */}
             {/* 1. МОБИЛЬНАЯ ВЕРСТКА (<= 500px)                         */}
-            {/* Одна карточка в центре, по бокам обрезки                */}
             {/* ======================================================= */}
             <motion.div
                 className={cn(
-                    // Показываем только до 500px
                     "grid gap-2.5 min-[501px]:hidden",
-                    // Логика: 3 колонки.
-                    // (Пустая) - (Карточка) - (Пустая)
-                    // Ширина 150% от экрана, сдвиг -25%, чтобы центр был крупнее
-                    "grid-cols-3 w-[150%] -ml-[25%]"
+                    
+                    // ИЗМЕНЕНИЕ ЗДЕСЬ:
+                    // Было: grid-cols-3 (равные колонки 1fr 1fr 1fr)
+                    // Стало: grid-cols-[0.7fr_1.6fr_0.7fr]
+                    // Боковые сектора (0.7fr) стали уже, центральный (1.6fr) — шире.
+                    // Контейнер остался широким (150%) и сдвинутым (-25%), чтобы центр был по центру экрана.
+                    "grid-cols-[0.7fr_1.6fr_0.7fr] w-[150%] -ml-[25%]"
                 )}
                 variants={containerVariants}
                 initial="hidden"
@@ -50,17 +49,17 @@ export const Advantages = () => {
             >
                 {ADVANTAGE_ITEMS.map((item) => (
                     <div key={item.num} className="contents">
-                        {/* Левая заглушка */}
+                        {/* Левая заглушка (узкая) */}
                         <motion.div variants={itemVariants}>
                             <EmptyCard />
                         </motion.div>
 
-                        {/* Центральная карточка */}
+                        {/* Центральная карточка (широкая) */}
                         <motion.div variants={itemVariants}>
                             <AdvantageCard {...item} />
                         </motion.div>
 
-                        {/* Правая заглушка */}
+                        {/* Правая заглушка (узкая) */}
                         <motion.div variants={itemVariants}>
                             <EmptyCard />
                         </motion.div>
@@ -70,15 +69,11 @@ export const Advantages = () => {
 
             {/* ======================================================= */}
             {/* 2. ПЛАНШЕТНАЯ ВЕРСТКА (501px - 1024px)                  */}
-            {/* Две карточки в центре                                   */}
             {/* ======================================================= */}
             <motion.div
                 className={cn(
-                    // Скрыто на мобилке, Скрыто на десктопе. Видимо только посередине.
                     "hidden min-[501px]:grid min-[1025px]:hidden",
                     "gap-2.5",
-                    // Логика: 4 колонки
-                    // (Пустая) - (Карта) - (Карта) - (Пустая)
                     "grid-cols-4 w-[140%] -ml-[20%]"
                 )}
                 variants={containerVariants}
@@ -115,7 +110,6 @@ export const Advantages = () => {
             {/* ======================================================= */}
             <motion.div 
                 className={cn(
-                    // Показываем только если > 1024px
                     "hidden min-[1025px]:grid", 
                     "grid-cols-10 gap-2.5 min-w-[125%] -ml-[12.5%]"
                 )}

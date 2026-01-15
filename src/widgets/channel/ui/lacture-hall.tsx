@@ -85,7 +85,7 @@ export const LectureHall = () => {
                         На планшете это просто часть правой колонки.
                         На ПК занимает 2 колонки справа сверху.
                     */}
-                    <div className="flex flex-col gap-2.5 lg:col-span-2 lg:h-full">
+                    <div className="flex flex-col gap-2.5 lg:col-span-2 lg:h-full max-[500px]:max-h-auto">
                         <ConsumptionCard 
                             text="Аудитория ценит авторский тон, экспертность и личное мнение, читает не «на бегу», а с вовлечением"
                             className="w-full lg:flex-1" // flex-1 чтобы растягивались равномерно
@@ -105,7 +105,7 @@ export const LectureHall = () => {
                     {/* Реакция: На ПК нижний ряд слева (span-3) */}
                     <ReactionCard 
                         text="Лучше всего заходят нативные интеграции и личные рекомендации автора. Плохо воспринимаются агрессивные офферы и шаблонные рекламные форматы"
-                        className="w-full lg:col-span-3 lg:h-full"
+                        className="w-full lg:col-span-3 lg:h-full max-[500px]:max-h-auto"
                     />
 
                     {/* Частота: На ПК нижний ряд справа (span-3) */}

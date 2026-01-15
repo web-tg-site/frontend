@@ -48,7 +48,15 @@ export const ModalCollection = ({
     const [view, setView] = useState<'create' | 'select'>('create');
     const [name, setName] = useState("");
     const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
+    const [isFocused, setIsFocused] = useState(false);
+    
+    // Используем состояние mounted, чтобы избежать ошибок гидратации
+    const [mounted, setMounted] = useState(false);
     const isMobile = useMediaQuery("(max-width: 500px)");
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         if (isOpen) {
@@ -60,6 +68,7 @@ export const ModalCollection = ({
             }
             setName("");
             onClearError();
+            setIsFocused(false);
         }
     }, [isOpen, collections.length]);
 
@@ -72,6 +81,7 @@ export const ModalCollection = ({
         if (name.trim()) {
             onCreate(name);
             setName(""); 
+            setIsFocused(false); 
         }
     }
 
@@ -81,13 +91,15 @@ export const ModalCollection = ({
         }
     }
 
-    const desktopVariants = {
+    // Анимация для десктопа и "плавающей" мобильной карточки
+    const popupVariants = {
         hidden: { opacity: 0, scale: 0.95, y: 10 },
         visible: { opacity: 1, scale: 1, y: 0 },
         exit: { opacity: 0, scale: 0.95, y: 10 }
     };
 
-    const mobileVariants = {
+    // Анимация для шторки снизу (только для выбора коллекций на мобилке)
+    const bottomSheetVariants = {
         hidden: { y: "100%" },
         visible: { y: 0 },
         exit: { y: "100%" }
@@ -99,12 +111,22 @@ export const ModalCollection = ({
         exit: { opacity: 0, x: 20 }
     };
 
+    if (!mounted) return null;
+
+    // Логика "поднятия" модалки вверх
+    // Поднимаем если: это мобилка И (мы в режиме создания ИЛИ поле в фокусе)
+    const isLiftedMode = isMobile && (view === 'create' || isFocused);
+
     return (
         <AnimatePresence>
             {isOpen && (
                 <div className={cn(
                     "fixed inset-0 z-[999] flex isolate",
-                    "items-center justify-center max-[500px]:items-end"
+                    // Важно: h-[100dvh] для учета адресной строки iOS
+                    "h-[100dvh] w-full",
+                    isLiftedMode 
+                        ? "items-start pt-20 px-4" // Плавающий режим (сверху)
+                        : "items-center justify-center max-[500px]:items-end" // Обычный режим (снизу)
                 )}>
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -114,21 +136,13 @@ export const ModalCollection = ({
                         className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
                     />
 
-                    {/* 
-                      НОВОЕ: 
-                      1. Добавлен `layout-root`, чтобы Framer Motion отслеживал изменения размеров внутри.
-                      2. Добавлен `layout` и `layout-transition` для плавной анимации размеров.
-                    */}
                     <motion.div
                         layout
-                        layout-root
-                        layout-transition={{ 
-                            type: "spring", // Тип анимации
-                            stiffness: 200, // Жесткость пружины
-                            damping: 25,    // Демпфирование (трение)
-                            mass: 1         // Масса элемента
-                        }}
-                        variants={isMobile ? mobileVariants : desktopVariants}
+                        layout-root // Помогает Framer Motion корректно обрабатывать смену позиционирования
+                        variants={isMobile 
+                            ? (isLiftedMode ? popupVariants : bottomSheetVariants) 
+                            : popupVariants
+                        }
                         initial="hidden"
                         animate="visible"
                         exit="exit"
@@ -136,7 +150,13 @@ export const ModalCollection = ({
                         className={cn(
                             "relative bg-[#6155F5] flex flex-col items-center shadow-2xl z-10 overflow-hidden",
                             "w-[540px] rounded-[32px] p-8",
-                            "max-[500px]:w-full max-[500px]:rounded-t-[32px] max-[500px]:rounded-b-none max-[500px]:p-6 max-[500px]:pb-8"
+                            
+                            // Стили для мобилки:
+                            // Если LiftedMode -> полная ширина, полные скругления (убирает линию стыка с клавиатурой)
+                            // Иначе -> шторка прижатая к низу
+                            isMobile && isLiftedMode
+                                ? "w-full rounded-[32px] p-6 pb-8"
+                                : "max-[500px]:w-full max-[500px]:rounded-t-[32px] max-[500px]:rounded-b-none max-[500px]:p-6 max-[500px]:pb-8"
                         )}
                     >
                         <button 
@@ -221,7 +241,10 @@ export const ModalCollection = ({
                                     className="w-full mb-8"
                                 >
                                     <Input
+                                        // Автофокус помогает сразу открыть клавиатуру и поднять модалку
                                         autoFocus
+                                        onFocus={() => setIsFocused(true)}
+                                        onBlur={() => setIsFocused(false)}
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         placeholder="Название"
@@ -278,6 +301,7 @@ export const ModalCollection = ({
                                             if (collections.length > 0) {
                                                 setView('select');
                                                 onClearError();
+                                                setIsFocused(false);
                                             } else {
                                                 onClose();
                                             }

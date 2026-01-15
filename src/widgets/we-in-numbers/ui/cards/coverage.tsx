@@ -4,14 +4,13 @@ import { BagIcon } from "../../icons/bag-icon";
 import { WeCard } from "../we-card";
 
 export const Coverage = () => (
-    // Внешняя сетка: 1 колонка (до 1024px), 5 колонок (после 1024px)
     <div className="col-span-1 min-[1025px]:col-span-5">
-        <WeCard className="relative overflow-hidden flex flex-col justify-end min-h-[300px]">
-            <div className="absolute inset-0 p-4 pt-8">
-                {/* Внутренняя сетка: 4 колонки (до 1024px), 6 колонок (после 1024px) */}
+        <WeCard className="flex flex-col min-h-[300px] overflow-hidden">
+            
+            {/* ВЕРХНИЙ БЛОК (Пакеты) */}
+            <div className="relative w-full flex-grow overflow-hidden p-4 pt-8 [mask-image:linear-gradient(to_bottom,black_85%,transparent)]">
                 <div className="grid grid-cols-4 min-[1025px]:grid-cols-6 gap-3 content-start justify-items-center w-full">
                     {BAGS_GRID.map((status, idx) => {
-                         // Пустой div сохраняет структуру сетки
                          if (status === null) return <div key={idx} className="w-full aspect-square" />;
                          
                          const isActive = status === 1;
@@ -19,7 +18,6 @@ export const Coverage = () => (
                             <div 
                                 key={idx} 
                                 className={`
-                                    /* Размеры пакета: 48px на планшете, 64px на десктопе */
                                     w-12 h-12 min-[1025px]:w-16 min-[1025px]:h-16 
                                     rounded-[14px] min-[1025px]:rounded-[20px] 
                                     flex items-center justify-center transition-all duration-500
@@ -29,7 +27,6 @@ export const Coverage = () => (
                                     }
                                 `}
                             >
-                                {/* Иконка: 24px на планшете, 32px на десктопе */}
                                 <BagIcon 
                                     className={`w-6 h-6 min-[1025px]:w-8 min-[1025px]:h-8 ${isActive ? "text-black" : "text-gray-300"}`}
                                 />
@@ -38,7 +35,9 @@ export const Coverage = () => (
                     })}
                 </div>
             </div>
-            <div className="pb-7.5 px-6 relative z-20 pointer-events-none">
+
+            {/* НИЖНИЙ БЛОК (Текст) */}
+            <div className="pb-7.5 px-6 pt-2 flex-shrink-0">
                 <Numbers className="text-black">540+</Numbers>
                 <Text variant="3" className="text-black/60 leading-tight max-w-[80%]">
                     Млн суммарный охват за год

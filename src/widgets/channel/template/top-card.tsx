@@ -12,7 +12,7 @@ export const TopCard = ({
     return (
         <div className={cn(
             "border border-white/10 bg-[#F9F9F9]/20 h-[121px] rounded-[28px] flex flex-col justify-center items-center text-center",
-            "flex-1 min-w-0 px-1 sm:px-2 lg:flex-none lg:w-[150px] lg:px-3.5",
+            "flex-1 min-w-0 px-1 sm:px-2 lg:flex-none lg:px-3.5",
             className
         )}>
             <p className="text-white text-[16px] sm:text-[22px] lg:text-[28px] leading-none truncate w-full font-medium">

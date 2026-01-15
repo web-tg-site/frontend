@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link'; // 1. Импортируем Link
 
 interface ChannelData {
     id: number;
@@ -78,10 +79,12 @@ const MapPin = ({ data }: { data: ChannelData }) => {
             }}
         >
             {/* 
-                Пин
-                duration-500 + ease-out (cubic-bezier) для "пружинного" эффекта
+                2. Заменили div на Link и добавили href
             */}
-            <div className="absolute bottom-0 right-0 w-32 h-32 sm:w-48 sm:h-48 origin-bottom-right transform rotate-45 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] scale-[0.27] hover:scale-100 cursor-pointer group drop-shadow-md hover:drop-shadow-2xl will-change-transform">
+            <Link
+                href={`/channel/${data.id}`}
+                className="absolute bottom-0 right-0 w-32 h-32 sm:w-48 sm:h-48 origin-bottom-right transform rotate-45 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] scale-[0.27] hover:scale-100 cursor-pointer group drop-shadow-md hover:drop-shadow-2xl will-change-transform"
+            >
                 
                 {/* Рамка */}
                 <div className="w-full h-full bg-[#3B82F6] rounded-full rounded-br-none p-[3px] sm:p-1.5 shadow-lg">
@@ -95,24 +98,8 @@ const MapPin = ({ data }: { data: ChannelData }) => {
                             className="w-full h-full object-cover"
                         />
 
-                        {/* 
-                            Обертка для центрирования плашки.
-                            Убрали opacity и delay отсюда, чтобы не было "ступеньки".
-                        */}
                         <div className="absolute inset-0 flex items-center justify-center z-20">
                             
-                            {/* 
-                                ПЛАШКА С ИСПРАВЛЕННОЙ АНИМАЦИЕЙ
-                                
-                                1. scale-50 -> group-hover:scale-100:
-                                   Плашка "вырастает" вместе с пином, а не просто появляется.
-                                
-                                2. backdrop-blur-none -> group-hover:backdrop-blur-md:
-                                   Мы анимируем само размытие! Оно плавно меняется от 0px до нужного значения.
-                                
-                                3. transition-all duration-500:
-                                   Синхронизировано с открытием пина.
-                            */}
                             <div className="
                                 bg-black/40 
                                 rounded-full px-4 py-2 text-center border border-white/20 shadow-xl shadow-black/10
@@ -136,7 +123,7 @@ const MapPin = ({ data }: { data: ChannelData }) => {
 
                     </div>
                 </div>
-            </div>
+            </Link>
         </div>
     );
 };

@@ -41,11 +41,11 @@ export const PersonalSelection = () => {
     return (
         <section className="pb-[71px]">
             {/* БЛОК 1: Заголовок и падающие теги */}
-            <div className="relative pt-[155px] pb-[133px] overflow-hidden">
+            <div className="relative lg:pt-[155px] pt-[81px] lg:pb-[133px] pb-[61px] overflow-hidden">
                 <FallingTags />
 
                 <div className="relative z-10 px-7.5">
-                    <Headline variant="h2" className="max-w-[1000px] font-normal leading-tight mb-13 text-[30px] min-[500px]:text-[60px] lg:text-[100px]">
+                    <Headline variant="h2" className="max-w-[1000px] font-normal leading-tight lg:mb-13 mb-3.5 text-[30px] min-[500px]:text-[60px] lg:text-[100px]">
                         Персональная подборка каналов для
                         <BrandBadge 
                             text="SlayMedia" 
@@ -138,7 +138,7 @@ export const PersonalSelection = () => {
 
             {/* БЛОК 3: Подборка каналов и цена */}
             <div className="px-[30px]">
-                <Title className="text-[50px] mb-8">
+                <Title className="lg:text-[50px] text-[24px] mb-8">
                     Наша подборка для вас 
                 </Title>
 

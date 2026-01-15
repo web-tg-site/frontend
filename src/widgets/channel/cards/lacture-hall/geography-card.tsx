@@ -37,7 +37,7 @@ export const GeographyCard = ({
     return (
         <GridCard title="География" className={className}>
             <motion.div 
-                className="grid lg:grid-cols-4 grid-cols-2 gap-4"
+                className="grid lg:grid-cols-4 min-[500px]:grid-cols-2 grid-cols-1 gap-4"
                 variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"

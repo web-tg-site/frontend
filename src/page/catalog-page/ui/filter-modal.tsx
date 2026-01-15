@@ -79,7 +79,6 @@ export const FilterModal = ({
         <div className={cn(
             desktop 
                 ? "flex gap-12" 
-                // ВАЖНО: min-h-0 нужен, чтобы flex-контейнер корректно обрабатывал скролл внутри
                 : "flex-1 overflow-y-auto custom-scrollbar p-5 min-h-0"
         )}>
             <div className={desktop ? "flex-1" : "mb-8"}>
@@ -135,8 +134,6 @@ export const FilterModal = ({
                     })}
                 </div>
             </div>
-            
-            {/* Небольшой отступ в конце скролла, чтобы контент не прилипал к кнопке */}
             {!desktop && <div className="h-4 shrink-0" />}
         </div>
     )
@@ -150,8 +147,9 @@ export const FilterModal = ({
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                // Изменил z-50 на z-[100]
-                className="fixed inset-0 z-[100] flex flex-col bg-black/60 backdrop-blur-sm min-[1025px]:hidden"
+                // 1. Используем h-[100dvh] для учета адресной строки на iOS
+                // 2. z-[100] чтобы перекрыть все
+                className="fixed top-0 left-0 w-full h-[100dvh] z-[100] flex flex-col bg-black/60 backdrop-blur-sm min-[1025px]:hidden supports-[height:100dvh]:h-[100dvh]"
             >
                 <motion.div variants={headerVariants} className="bg-white rounded-b-[20px] px-4 py-4 mb-2 flex items-center justify-between shadow-lg shrink-0 relative z-20">
                     <button onClick={onClose} className="p-1 -ml-1 text-black/60 hover:text-black">
@@ -161,12 +159,14 @@ export const FilterModal = ({
                     <div className="w-6" />
                 </motion.div>
 
-                {/* Добавил overflow-hidden, чтобы скролл был внутри этого блока */}
                 <motion.div variants={sheetVariants} className="bg-white flex-1 rounded-t-[20px] shadow-2xl flex flex-col overflow-hidden relative z-10">
                     <Fields desktop={false} />
                     
-                    {/* Футер: shrink-0 гарантирует, что он не сожмется. z-20 поднимает над скроллом */}
-                    <div className="p-4 border-t border-gray-100 bg-white mt-auto shrink-0 relative z-20">
+                    {/* 
+                        3. Добавили pb-[calc(1rem+env(safe-area-inset-bottom))]
+                        Это отступ снизу, который учитывает полоску Home Indicator на iPhone X+
+                    */}
+                    <div className="p-4 border-t border-gray-100 bg-white mt-auto shrink-0 relative z-20 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                         <button onClick={handleSave} className="w-full py-3.5 rounded-full bg-primary text-white font-semibold text-lg active:scale-[0.98] transition-transform">
                             Сохранить
                         </button>

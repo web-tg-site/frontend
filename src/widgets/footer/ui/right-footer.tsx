@@ -24,13 +24,13 @@ export const RightFooter = () => {
 
                     <Link href='https:/t.me/Max_louj' target="_blank" className="flex items-center gap-3 cursor-pointer">
                         <ML />
-                        <p className="text-white/60 lg:text-[14px] text-[12px]">
+                        <p className="text-white/60 lg:text-[14px] text-[8px]">
                             Website by ML Agency
                         </p>
                     </Link>
                 </div>
                 
-                <nav className="grid grid-cols-1 items-end justify-end text-right gap-3 max-w-[166px]">
+                <nav className="grid grid-cols-1 items-end justify-end text-right gap-3 max-[500px]:max-w-[166px]">
                     {DOCUMENTS.map((doc, idx) => (
                         <DocumentLink 
                             {...doc}

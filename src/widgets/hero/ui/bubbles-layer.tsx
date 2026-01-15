@@ -58,6 +58,26 @@ export const BubblesLayer = () => {
     const bubbleElements = useRef<Map<number, HTMLDivElement>>(new Map());
     const runnerRef = useRef<Matter.Runner | null>(null);
     const engineRef = useRef<Matter.Engine | null>(null);
+    
+    // Реф для хранения ширины экрана, чтобы избегать ререндера при изменении только высоты
+    const lastWidthRef = useRef<number>(0);
+
+    // Глобальный слушатель отпускания мыши (восстановление скролла)
+    useEffect(() => {
+        const handlePointerUp = () => {
+            if (sceneRef.current) {
+                sceneRef.current.style.pointerEvents = "none";
+                sceneRef.current.style.zIndex = "auto";
+            }
+        };
+        window.addEventListener("pointerup", handlePointerUp);
+        window.addEventListener("touchend", handlePointerUp);
+        
+        return () => {
+            window.removeEventListener("pointerup", handlePointerUp);
+            window.removeEventListener("touchend", handlePointerUp);
+        };
+    }, []);
 
     useEffect(() => {
         if (!sceneRef.current) return;
@@ -87,7 +107,9 @@ export const BubblesLayer = () => {
             const width = document.documentElement.clientWidth;
             const height = window.innerHeight;
 
-            // 1. Создание тел для бабблов
+            // Запоминаем текущую ширину
+            lastWidthRef.current = width;
+
             const bubblesBodies: { bubbleId: number; body: Matter.Body; width: number; height: number }[] = [];
 
             BUBBLES_DATA.forEach((bubble) => {
@@ -113,7 +135,6 @@ export const BubblesLayer = () => {
                 bubblesBodies.push({ bubbleId: bubble.id, body, width: elWidth, height: elHeight });
             });
 
-            // 2. Стены и пол
             const wallThickness = 100;
             const ground = Bodies.rectangle(width / 2, height + wallThickness / 2, width + 400, wallThickness, { isStatic: true });
             const wallLeft = Bodies.rectangle(-wallThickness / 2, height / 2, wallThickness, height * 3, { isStatic: true });
@@ -121,7 +142,7 @@ export const BubblesLayer = () => {
 
             const bodiesToAdd = [...bubblesBodies.map(b => b.body), ground, wallLeft, wallRight];
 
-            // 3. КОЛЛАЙДЕР ТЕЛЕФОНА
+            // --- КОЛЛАЙДЕР ТЕЛЕФОНА ---
             if (width > 500) {
                 const phoneW = 445; 
                 const phoneH = 350;
@@ -143,19 +164,13 @@ export const BubblesLayer = () => {
 
             Composite.add(engine.world, bodiesToAdd);
 
-            // 4. Настройка взаимодействия
-            // ВАЖНО: Привязываем мышь к контейнеру (sceneRef), а не к document.body
             const mouse = Mouse.create(sceneRef.current);
-            const mouseElement = mouse.element as HTMLElement;
-
-            // Убираем перехват колеса мыши, чтобы работал скролл колесиком на ПК
+            
             // @ts-ignore
             mouse.element.removeEventListener("mousewheel", mouse.mousewheel);
             // @ts-ignore
             mouse.element.removeEventListener("DOMMouseScroll", mouse.mousewheel);
 
-            // НЕ удаляем touchmove слушатель, иначе не будет работать драг на мобильных!
-            
             const mouseConstraint = MouseConstraint.create(engine, {
                 mouse,
                 constraint: { stiffness: 0.2, render: { visible: false } }
@@ -218,6 +233,14 @@ export const BubblesLayer = () => {
         initTimeout = setTimeout(initPhysics, 50);
 
         const handleResize = () => {
+            const currentWidth = document.documentElement.clientWidth;
+            
+            // Если ширина изменилась незначительно (менее 50px) или вообще не изменилась 
+            // (например, сработал ресайз только по высоте из-за адресной строки), то игнорируем
+            if (Math.abs(currentWidth - lastWidthRef.current) < 50) {
+                return;
+            }
+
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(initPhysics, 300);
         };
@@ -232,7 +255,6 @@ export const BubblesLayer = () => {
     }, [router]);
 
     return (
-        // Контейнер имеет pointer-events-none, поэтому тапы мимо бабблов проходят на сайт
         <div ref={sceneRef} className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
             {BUBBLES_DATA.map((bubble) => (
                 <div
@@ -241,8 +263,13 @@ export const BubblesLayer = () => {
                         if (el) bubbleElements.current.set(bubble.id, el);
                         else bubbleElements.current.delete(bubble.id);
                     }}
+                    onPointerDown={() => {
+                        if (sceneRef.current) {
+                            sceneRef.current.style.pointerEvents = "auto";
+                            sceneRef.current.style.zIndex = "50";
+                        }
+                    }}
                     className={cn(
-                        // Добавлен 'touch-none', чтобы браузер не скроллил страницу, когда палец на баббле
                         "absolute top-0 left-0 pointer-events-auto touch-none", 
                         "flex items-center rounded-full text-white font-semibold select-none whitespace-nowrap will-change-transform cursor-grab active:cursor-grabbing shadow-lg",
                         "px-3 py-2 gap-1.5", 
