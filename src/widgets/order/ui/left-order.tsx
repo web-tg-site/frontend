@@ -26,7 +26,7 @@ export const LeftOrder = () => {
     const sceneRef = useRef<HTMLDivElement>(null);
     const bubbleElements = useRef<Map<number, HTMLDivElement>>(new Map());
 
-    // Логика физики (хук приведен ниже)
+    // Логика физики
     const { isReady } = useMatterPhysics(sceneRef, TAGS_DATA, bubbleElements);
 
     return (
@@ -45,9 +45,10 @@ export const LeftOrder = () => {
             <div 
                 ref={sceneRef} 
                 className="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"
-                // Важно: отключаем стандартный скролл браузера внутри этой области, 
-                // чтобы палец управлял физикой, а не скроллил страницу
-                style={{ touchAction: 'none' }} 
+                // ИСПРАВЛЕНИЕ:
+                // 'pan-y' разрешает вертикальный скролл страницы браузером.
+                // Горизонтальные действия и тапы останутся доступны для физики.
+                style={{ touchAction: 'pan-y' }} 
             >
                 {TAGS_DATA.map((tag) => (
                     <div
@@ -60,19 +61,17 @@ export const LeftOrder = () => {
                             "flex items-center rounded-full",
                             "bg-transparent text-white font-semibold select-none whitespace-nowrap",
                             "transition-colors hover:bg-white/10",
-                            "gap-2 px-3 py-2 border", // Меньше отступы, тоньше рамка
-                            "text-sm",                // Меньше текст
+                            "gap-2 px-3 py-2 border", 
+                            "text-sm",                
                             "lg:gap-4 lg:px-8 lg:lg:py-4 lg:border-2",
                             "lg:text-2xl",
                             !isReady && "opacity-0" 
                         )}
                         style={{
-                            // Прячем за кадром до инициализации
                             transform: 'translate3d(-5000px, -5000px, 0)',
                             willChange: 'transform'
                         }}
                     >
-                        {/* Иконка тоже адаптивная */}
                         <tag.icon className="w-4 h-4 lg:w-7 lg:h-7" strokeWidth={2} />
                         <span>{tag.title}</span>
                     </div>
