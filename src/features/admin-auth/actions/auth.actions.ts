@@ -1,15 +1,27 @@
 'use server'
 
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation' // Импортируем redirect
 
 export async function setAuthCookie(token: string) {
-    const cookieStore = await cookies()
+    console.log('[LOGS][RESPONSE TOKEN]:', token);
+    const cookieStore = await cookies();
+
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    // Проверка на всякий случай
+    if (!token) {
+        console.error("Попытка записать пустой токен!")
+        return { success: false, error: "Token is empty" }
+    }
     
     cookieStore.set('accessToken', token, {
-        httpOnly: true, // Важно: JS на клиенте не увидит куку, но Middleware увидит
-        secure: process.env.NODE_ENV === 'production', // HTTPS только на проде
-        path: '/', // Доступна на всех страницах
-        maxAge: 60 * 60 * 24 * 7, // 7 дней
+        httpOnly: true,
+        secure: isProduction,
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
         sameSite: 'lax'
     })
+
+    redirect('/admin')
 }

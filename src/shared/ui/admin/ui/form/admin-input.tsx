@@ -4,45 +4,77 @@ import { cn } from "@/shared/utils"
 import { AdminInputProps } from "../../types/admin-input.props"
 
 export const AdminInput = forwardRef<HTMLInputElement, AdminInputProps>(
-    ({ className, error, ...props }, ref) => {
+    ({ className, error, icon, onIconClick, variant = 'standard', ...props }, ref) => { // 👈 variant по умолчанию 'standard'
         return (
             <div className="w-full flex flex-col">
-                <input
-                    ref={ref}
-                    className={cn(
-                        // 1. Базовая форма
-                        "w-full rounded-xl border outline-none transition-all duration-300",
+                <div className="relative w-full">
+                    <input
+                        ref={ref}
+                        className={cn(
+                            // ==========================================
+                            // 1. БАЗОВЫЕ СТИЛИ (Общие для всех)
+                            // ==========================================
+                            "w-full outline-none transition-all duration-300",
+                            "text-white placeholder:text-[#656565] font-medium",
+                            "text-sm lg:text-base",
+                            "caret-white",
+                            
+                            // Отступы (учитываем иконку)
+                            "pl-4 py-3 lg:pl-5 lg:py-3.5",
+                            icon ? "pr-10 lg:pr-12" : "pr-4 lg:pr-5",
 
-                        // 2. Цвета (Фон и Границы)
-                        // Используем цвет фона #282828 (bg-background) или чуть темнее,
-                        // чтобы инпут выделялся внутри карточки (#212121).
-                        "bg-[#282828] border-transparent",
-                        
-                        // Ховер и Фокус
-                        "hover:border-white/10 hover:bg-[#2F2F2F]",
-                        "focus:border-white/20 focus:bg-[#2F2F2F]",
+                            // ==========================================
+                            // 2. ВАРИАНТЫ (VARIANTS)
+                            // ==========================================
+                            
+                            // --- STANDARD (По умолчанию) ---
+                            // Светло-серый фон (#282828), стандартный бордер
+                            variant === 'standard' && [
+                                "bg-[#282828] border border-transparent rounded-xl",
+                                "hover:border-white/10 hover:bg-[#2F2F2F]",
+                                "focus:border-white/20 focus:bg-[#2F2F2F]",
+                                // Autofill фикс для цвета #282828
+                                "[&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#282828]"
+                            ],
 
-                        // 3. Типографика
-                        "text-white placeholder:text-[#656565] font-medium",
-                        "text-sm lg:text-base",
+                            // --- ALTERNATIVE (Как на скрине) ---
+                            // Более темный/плоский фон (#1E1E1E), более сильное скругление
+                            variant === 'alternative' && [
+                                "bg-[#1E1E1E] border border-transparent rounded-[16px]", // Чуть больше скругление
+                                "hover:bg-[#252525]", // Легкое осветление при наведении
+                                "focus:bg-[#252525] focus:border-white/10",
+                                // Autofill фикс для цвета #1E1E1E
+                                "[&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#1E1E1E]"
+                            ],
 
-                        // 4. Отступы (Адаптивные)
-                        "px-4 py-3 lg:px-5 lg:py-3.5",
+                            // ==========================================
+                            // 3. ОБЩИЕ ФИКСЫ АВТОЗАПОЛНЕНИЯ
+                            // ==========================================
+                            "[&:-webkit-autofill]:[-webkit-text-fill-color:#fff]",
+                            "[&:-webkit-autofill]:transition-[background-color] [&:-webkit-autofill]:duration-[5000s]",
 
-                        // 5. ФИКС АВТОЗАПОЛНЕНИЯ (AUTOFILL) для темной темы
-                        "caret-white",
-                        "[&:-webkit-autofill]:[-webkit-text-fill-color:#fff]",
-                        // Важно: заливаем тенью цвета фона (#282828), чтобы не было белого пятна
-                        "[&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#282828]",
-                        "[&:-webkit-autofill]:transition-[background-color] [&:-webkit-autofill]:duration-[5000s]",
+                            // ==========================================
+                            // 4. СОСТОЯНИЕ ОШИБКИ (Перекрывает всё)
+                            // ==========================================
+                            error && "border-red-500/40 text-red-100 placeholder:text-red-200/40 bg-red-900/10 focus:border-red-500/60",
 
-                        // 6. Состояние ошибки
-                        error && "border-red-500/40 text-red-100 placeholder:text-red-200/40 bg-red-900/10 focus:border-red-500/60",
+                            className
+                        )}
+                        {...props}
+                    />
 
-                        className
+                    {icon && (
+                        <div
+                            onClick={onIconClick}
+                            className={cn(
+                                "absolute right-3.5 top-1/2 -translate-y-1/2 text-[#656565] transition-colors",
+                                onIconClick ? "cursor-pointer hover:text-white" : "pointer-events-none"
+                            )}
+                        >
+                            {icon}
+                        </div>
                     )}
-                    {...props}
-                />
+                </div>
 
                 <AnimatePresence>
                     {error && (

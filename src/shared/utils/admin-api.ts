@@ -1,24 +1,31 @@
 import axios from "axios";
 
 export const $apiAdmin = axios.create({
-    baseURL: `${process.env.NEXT_PUBLIC_API_HOST}/api/admin`
+    baseURL: `${process.env.NEXT_PUBLIC_API_HOST}/api/admin`,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    // ВАЖНО: Это заставляет браузер отправлять httpOnly куки на бэкенд
+    withCredentials: true 
 });
 
-// Функция для получения куки без библиотек
-function getCookie(name: string) {
-    if (typeof document === 'undefined') return null; // Защита от SSR
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return match ? match[2] : null;
-}
+// Интерцептор для обработки ошибок
+$apiAdmin.interceptors.response.use(
+    (config) => config,
+    async (error) => {
+        const originalRequest = error.config;
 
-$apiAdmin.interceptors.request.use((config) => {
-    const token = getCookie('accessToken');
-
-    console.log(token);
-
-    if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
+        // Если пришел 401 (Unauthorized) и это не повторная попытка
+        if (error.response?.status === 401 && error.config && !error.config._isRetry) {
+            originalRequest._isRetry = true;
+            
+            // Токен протух или неверен.
+            // Редиректим на страницу входа
+            if (typeof window !== 'undefined') {
+                window.location.href = '/admin/auth';
+            }
+        }
+        
+        throw error;
     }
-
-    return config;
-});
+);

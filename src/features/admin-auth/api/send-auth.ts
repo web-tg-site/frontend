@@ -4,7 +4,7 @@ import { LoginFormData } from "../types/login-form-data";
 export const sendAuth = async (authData: LoginFormData) => {
     const { data } = await $apiAdmin.post('/login', authData);
 
-    console.log(data);
+    console.log('токен', data);
 
     return data;
 }

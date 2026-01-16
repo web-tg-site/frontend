@@ -5,3 +5,31 @@
     --color-card: #212121;
     --shadow-card: 0 4px 8px 0 rgba(0, 0, 0, 0.06), 0 0 4px 0 rgba(0, 0, 0, 0.04);
 }
+
+@layer utilities {
+    .custom-scrollbar {
+        /* Firefox */
+        scrollbar-width: thin;
+        scrollbar-color: #424242 transparent;
+    }
+
+    /* Chrome, Edge, Safari */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px; /* Ширина полоски */
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent; /* Фон дорожки прозрачный */
+        margin-top: 4px;         /* Отступы, чтобы не прилипало к краям */
+        margin-bottom: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #424242; /* Цвет ползунка */
+        border-radius: 9999px;     /* Полное скругление */
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #5A5A5A; /* Цвет при наведении */
+    }
+}

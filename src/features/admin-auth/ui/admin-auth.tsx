@@ -54,7 +54,6 @@ const AdminAuthContent = () => {
             // ИСПРАВЛЕНО: используем access_token (как на скриншоте)
             if (response?.access_token) {
                 await setAuthCookie(response.access_token)
-                router.push("/admin")
             } else {
                 console.error("Ответ сервера:", response) // Логируем, если что-то пойдет не так
                 throw new Error("Токен не получен от сервера")
