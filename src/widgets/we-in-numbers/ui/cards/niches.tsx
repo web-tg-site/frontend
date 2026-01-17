@@ -4,25 +4,28 @@ import { WeCard } from "../we-card";
 
 export const Niches = () => (
     <div className="col-span-1 min-[1025px]:col-span-7">
-        {/* 
-            Карточка: relative для позиционирования слоев.
-            flex + justify-end: чтобы прижать блок с текстом к низу.
-        */}
         <WeCard className="relative flex flex-col justify-end min-h-[340px] overflow-hidden">
             
             {/* 
                 СЛОЙ С ТЕГАМИ (Фон)
-                1. absolute inset-0: Растягиваем на всю карточку.
-                2. mask-image: Делаем их видимыми сверху, но прозрачными в нижних 30%, 
-                   где находится текст.
+                Ключевые изменения для мобилки:
+                1. bottom-[100px] на мобилке - оставляем место для текста
+                2. Более агрессивная маска на мобилке (50% вместо 60%)
             */}
-            <div className="absolute inset-0 w-full h-full pointer-events-none [mask-image:linear-gradient(to_bottom,black_60%,transparent_95%)]">
+            <div 
+                className="
+                    absolute inset-x-0 top-0 
+                    bottom-[100px] min-[1025px]:bottom-0
+                    pointer-events-none 
+                    [mask-image:linear-gradient(to_bottom,black_50%,transparent_100%)]
+                    min-[1025px]:[mask-image:linear-gradient(to_bottom,black_60%,transparent_95%)]
+                "
+            >
                 {/* 
                     Контейнер для масштабирования.
-                    scale-[1.1]: Немного увеличиваем на мобилке, чтобы раздвинуть теги к краям.
-                    origin-center: Масштабируем от центра, чтобы заполнить все углы.
+                    На мобилке уменьшаем scale чтобы теги не выходили за границы
                 */}
-                <div className="relative w-full h-full origin-center scale-[1.1] min-[1025px]:scale-100">
+                <div className="relative w-full h-full origin-top scale-100 min-[1025px]:scale-100">
                     {TAGS.map((tag, idx) => (
                         <div
                             key={idx}
@@ -33,8 +36,8 @@ export const Niches = () => (
                                 whitespace-nowrap animate-float 
                                 ${tag.rotate} ${tag.scale}
                             `}
-                            // Убрали zIndex из style, чтобы они случайно не перекрыли текст (хотя маска и так спасет)
                             style={{
+                                // Пересчитываем top относительно урезанного контейнера
                                 top: tag.top, 
                                 left: tag.left, 
                                 animationDelay: `${idx * 0.5}s`,
@@ -54,11 +57,9 @@ export const Niches = () => (
 
             {/* 
                 СЛОЙ С ТЕКСТОМ
-                relative z-10: Поднимаем над фоном.
-                bg-gradient-to-t: Можно добавить легкий градиент снизу, если иконки все еще мешают,
-                но mask-image выше должна справиться.
+                Добавляем фоновый градиент как дополнительную защиту
             */}
-            <div className="relative z-10 pb-7.5 px-8 pt-4">
+            <div className="relative z-10 pb-7.5 px-8 pt-4 bg-gradient-to-t from-white via-white/80 to-transparent min-[1025px]:bg-none">
                 <Numbers className="text-black">15+</Numbers>
                 <Text variant="3" className="text-black/60">Ниш и индустрий</Text>
             </div>

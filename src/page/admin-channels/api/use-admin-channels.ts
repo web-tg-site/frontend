@@ -15,7 +15,8 @@ export const useAdminChannels = () => {
                     name: channel.name,
                     category: channel.category.name,
                     subscribers: Number(channel.subscribers),
-                    price: Number(channel.coast)
+                    price: Number(channel.coast),
+                    image: channel.image
                 }
             });
 

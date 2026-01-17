@@ -4,4 +4,5 @@ export interface AdminChannelItem {
     category: string;
     subscribers: number;
     price: number;
+    image: string;
 }

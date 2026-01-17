@@ -12,10 +12,18 @@ import { useAdminCategories } from "../api/use-admin-category";
 import { useAdminChannels } from "../api/use-admin-channels";
 import { useConfirm } from "@/shared/lib/confirm-dialog";
 import { AdminChannelsTable } from "./admin-channels-table";
+import { deleteChannel } from "../api/delete-channel";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export const AdminChannels = ({
     type
 }: AdminChannelsProps) => {
+    //React-query
+    const queryClient = useQueryClient();
+
+    const router = useRouter();
     // Определяем права доступа: если admin — можно редактировать/удалять
     const isEditable = type === 'admin'; 
 
@@ -29,7 +37,6 @@ export const AdminChannels = ({
 
     // Загрузка данных категорий
     const { data: categoryData, isLoading: categoryLoading } = useAdminCategories();
-    // categories: { value: number, label: string }[]
     const categories = !categoryData ? [] : categoryData;
 
     // Загрузка данных каналов
@@ -73,8 +80,9 @@ export const AdminChannels = ({
 
     // Функция-обработчик клика на иконку корзины
     const handleDeleteClick = (id: number | string) => {
-        // Находим имя канала для отображения в модалке
-        const channelName = rawChannels.find(c => c.id === id)?.name || "";
+        const channel = rawChannels.find(c => c.id === id);
+        const channelName = channel?.name || "";
+        const imageUrl = channel?.image || null;
 
         confirm({
             title: "Вы действительно хотите удалить канал ?",
@@ -82,11 +90,17 @@ export const AdminChannels = ({
             confirmText: "Удалить",
             cancelText: "Отменить",
             onConfirm: async () => {
-                // Здесь будет ваш запрос на удаление
-                console.log(`Удаление канала ${id}...`);
-                
-                // Пример:
-                // await deleteChannelMutation.mutateAsync(id);
+                try {
+                    await deleteChannel(id);
+
+                    if (imageUrl) {
+                        await axios.post("/api/delete-image", { url: imageUrl });
+                    }
+
+                    queryClient.invalidateQueries({ queryKey: ['Admin Channel'] })
+                } catch(e: unknown) {
+                    console.error(e);
+                }
             }
         });
     };
@@ -138,7 +152,7 @@ export const AdminChannels = ({
                 searchTerm={searchTerm}
                 withActions={isEditable}
                 onDelete={handleDeleteClick} // Передаем нашу функцию
-                onEdit={(id) => console.log('Edit clicked', id)}
+                onEdit={(id) => router.push(`/admin/channels/edit/${id}`)}
             />
         </div>
     )

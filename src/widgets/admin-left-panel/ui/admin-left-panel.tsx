@@ -23,7 +23,7 @@ export const AdminLeftPanel = () => {
     }
 
     return (
-        <AdminCard className="p-5 w-[290px] h-[700px] flex flex-col">
+        <AdminCard className="p-5 w-[290px] min-h-[700px] flex flex-col">
             <Image 
                 src='/logo.svg'
                 alt='Логотип'
@@ -65,7 +65,7 @@ export const AdminLeftPanel = () => {
                 )}
             </div>
 
-            <button onClick={handleLogout} className='mt-auto cursor-pointer group flex items-center gap-1.5'>
+            <button onClick={handleLogout} className='mt-auto cursor-pointer group flex items-center gap-1.5 pt-5'>
                 <LogOut 
                     size={18}
                     className='text-white transition group-hover:text-red-500/80'

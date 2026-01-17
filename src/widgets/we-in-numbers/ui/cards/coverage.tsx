@@ -39,7 +39,7 @@ export const Coverage = () => (
             {/* НИЖНИЙ БЛОК (Текст) */}
             <div className="pb-7.5 px-6 pt-2 flex-shrink-0">
                 <Numbers className="text-black">540+</Numbers>
-                <Text variant="3" className="text-black/60 leading-tight max-w-[80%]">
+                <Text variant="3" className="text-black/60 leading-tight lg:max-w-[80%]">
                     Млн суммарный охват за год
                 </Text>
             </div>

@@ -1,4 +1,4 @@
-import { FilePenLine, Plus, Drama, UsersRound, FileText } from "lucide-react";
+import { FilePenLine, Plus, Drama, UsersRound, FileText, FolderPen, FolderPlus, Folder, LayoutTemplate } from "lucide-react";
 import { Navigation } from "../types/navigation";
 
 export const NAV_DATA: Navigation[] = [
@@ -15,6 +15,24 @@ export const NAV_DATA: Navigation[] = [
         href: "/admin/channels/create",
         roles: ['admin'],
     },
+    {
+        icon: FolderPen,
+        name: "Редактировать категории",
+        href: "/admin/category",
+        roles: ['admin']
+    },
+    {
+        icon: FolderPlus,
+        name: "Добавить категорию",
+        href: "/admin/category/create",
+        roles: ['admin']
+    },
+    {
+        icon: LayoutTemplate,
+        name: "Редактирование hero",
+        href: "/admin/hero",
+        roles: ['admin']
+    },
     
     // --- ДЛЯ МЕНЕДЖЕРА (МОДЕРАТОРА) ---
     {
@@ -22,6 +40,12 @@ export const NAV_DATA: Navigation[] = [
         name: "Каталог каналов",
         href: "/admin/catalog", // Ссылка на просмотр
         roles: ['moderator'],
+    },
+    {
+        icon: Folder,
+        name: "Категории",
+        href: "/admin/category-check",
+        roles: ['moderator']
     },
 
     // --- ОБЩИЕ (Или специфичные права) ---
