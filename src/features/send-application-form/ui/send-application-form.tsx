@@ -61,11 +61,9 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
             //     throw new Error("Captcha validation failed")
             // }
 
-            const { isAgreed, ...payload } = data
-
             await SendApplication({
-                ...payload,
-                comment: payload.comment || ""
+                ...data,
+                comment: data.comment || ""
             })
 
             setIsSuccess(true)
