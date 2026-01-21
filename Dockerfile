@@ -1,42 +1,55 @@
-#Зависимости
-FROM oven/bun:1 as deps
+# Используем node:20-slim (Debian)
+FROM node:20-slim AS deps
 WORKDIR /app
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
 
-#Сборка
-FROM oven/bun:1 as builder
+RUN apt-get update -y && apt-get install -y openssl
+
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
+
+# Сборка
+FROM node:20-slim AS builder
 WORKDIR /app
+
+RUN apt-get update -y && apt-get install -y openssl
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG NEXT_PUBLIC_API_HOST
-ARG NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+# Заглушка URL для генерации
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/mydb"
+RUN npx prisma generate
 
-ENV NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST}
-ENV NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+RUN yarn build
 
-ENV NEXT_TELEMETRY_DISABLED 1
+RUN yarn install --production --frozen-lockfile && yarn cache clean
 
-RUN bun run build
-
-#Запуск
-FROM oven/bun:1 as runner
+# Запуск
+FROM node:20-slim AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
 
-#Копируем public
-COPY --from=builder /app/public ./public
+RUN apt-get update -y && apt-get install -y openssl
 
-#Копируем сборку
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+USER node
 
-RUN mkdir -p public/uploads
+COPY --chown=node:node package.json ./
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+COPY --chown=node:node --from=builder /app/node_modules ./node_modules
+COPY --chown=node:node --from=builder /app/dist ./dist
+COPY --chown=node:node --from=builder /app/prisma ./prisma
 
-CMD ["bun", "server.js"]
+# --- ВАЖНО: КОПИРУЕМ КОНФИГ ПРИЗМЫ ---
+COPY --chown=node:node --from=builder /app/prisma.config.ts ./
+# -------------------------------------
+
+USER root
+# Устанавливаем tsx глобально, чтобы читать prisma.config.ts
+RUN npm install -g tsx prisma
+USER node
+
+EXPOSE 4000
+
+# Запускаем
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node dist/src/main"]
