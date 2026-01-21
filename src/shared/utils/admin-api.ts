@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const $apiAdmin = axios.create({
-    baseURL: `${process.env.NEXT_PUBLIC_API_HOST}/api/admin`,
+    baseURL: `${process.env.NEXT_PUBLIC_API_HOST}/admin`,
     headers: {
         'Content-Type': 'application/json',
     },
