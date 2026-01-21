@@ -1,15 +1,15 @@
 import { cn } from "@/shared/utils"
-import { LucideIcon } from "lucide-react"
+import { DynamicIcon } from "../../dynamic-icon"
 
 export const Category = ({
     title,
     color,
-    icon: Icon,
+    icon,
     className=""
 }: {
     title: string,
     color: string,
-    icon: LucideIcon,
+    icon: string,
     className?: string
 }) => {
     return (
@@ -19,7 +19,8 @@ export const Category = ({
             }}
             className={cn("rounded-[57px] px-[15px] py-1.5 flex items-center gap-1 w-fit", className)}
         >
-            <Icon 
+            <DynamicIcon
+                name={icon}
                 size={24}
                 color="white"
             />

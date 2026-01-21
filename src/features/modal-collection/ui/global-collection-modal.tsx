@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useCollections } from "@/shared/store/use-collections"
-import { CHANNEL_MOCK } from "@/page/catalog-page/config/channel-mock"
 import { ModalCollection } from "./modal-collection"
 
 export const GlobalCollectionModal = () => {
@@ -10,15 +9,14 @@ export const GlobalCollectionModal = () => {
         isModalOpen, 
         collections, 
         activeChannelId,
+        activeChannelImage, // 👈 1. Достаем картинку из стора
         closeModal, 
         createCollection, 
         addChannelToCollection 
     } = useCollections()
 
-    // Локальное состояние ошибки
     const [error, setError] = useState<string | null>(null)
 
-    // Сбрасываем ошибку при закрытии
     const handleClose = () => {
         setError(null)
         closeModal()
@@ -30,7 +28,6 @@ export const GlobalCollectionModal = () => {
     }
 
     const handleSaveToCollection = (collectionId: string) => {
-        // Сбрасываем ошибку перед новой попыткой
         setError(null)
 
         if (activeChannelId === null) {
@@ -41,22 +38,21 @@ export const GlobalCollectionModal = () => {
         const targetCollection = collections.find(c => c.id === collectionId)
 
         if (targetCollection) {
-            // 1. ПРОВЕРКА НА ДУБЛИКАТ
             if (targetCollection.channelIds.includes(activeChannelId)) {
                 setError(`Этот канал уже есть в подборке «${targetCollection.name}»`)
-                return // Не закрываем модалку, показываем ошибку
+                return 
             }
         }
 
-        // 2. Если всё ок — сохраняем
-        const channel = CHANNEL_MOCK.find(c => c.id === activeChannelId)
-        const channelImage = channel?.image || ""
+        // 👇 2. Берем картинку из стора. Если вдруг null — пустую строку.
+        const imageToSave = activeChannelImage || ""
 
-        addChannelToCollection(collectionId, activeChannelId, channelImage)
+        // 👇 3. Передаем её в функцию
+        addChannelToCollection(collectionId, activeChannelId, imageToSave)
+        
         handleClose()
     }
 
-    // Хелпер, чтобы сбрасывать ошибку, когда пользователь меняет выбор
     const handleClearError = () => {
         if (error) setError(null)
     }
@@ -68,7 +64,6 @@ export const GlobalCollectionModal = () => {
             onCreate={handleCreate}
             onSaveToCollection={handleSaveToCollection}
             collections={collections}
-            // Передаем ошибку и функцию её очистки
             error={error}
             onClearError={handleClearError}
         />

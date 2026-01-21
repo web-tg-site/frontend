@@ -51,6 +51,10 @@ export const AdminLeftPanel = () => {
                         }
 
                         if (!userRole && item.roles) return null;
+                        
+                        const isActive = 
+                            pathname === item.href || 
+                            item.additionalHrefs?.some(path => pathname.startsWith(path));
 
                         return (
                             <NavigationItem
@@ -58,7 +62,7 @@ export const AdminLeftPanel = () => {
                                 icon={item.icon}
                                 name={item.name}
                                 href={item.href}
-                                active={pathname === item.href} 
+                                active={!!isActive} // Передаем результат новой проверки
                             />
                         );
                     })

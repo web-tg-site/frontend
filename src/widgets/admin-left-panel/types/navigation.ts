@@ -9,4 +9,5 @@ export interface Navigation {
     name: string;
     href: string;
     roles?: UserRole[]; 
+    additionalHrefs?: string[];
 }

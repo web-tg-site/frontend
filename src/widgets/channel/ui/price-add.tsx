@@ -3,7 +3,6 @@
 import { LandingBlock, Title } from "@/shared/ui"
 import { PriceTemplate } from "../template/price-template"
 import { LinearIcon, LineDuotoneIcon, MessageIcon } from "../icons/price-icons"
-// Импортируем Variants для типизации объектов анимации
 import { motion, Variants } from "framer-motion"
 
 // Типизация контейнера (управляет задержкой детей)
@@ -27,7 +26,17 @@ const itemVariants: Variants = {
     }
 }
 
-export const PriceAdd = () => {
+interface PriceAddProps {
+    price: {
+        advertisement: string;
+        integration: string;
+        repost: string;
+    }
+}
+
+export const PriceAdd = ({
+    price
+}: PriceAddProps) => {
     return (
         <LandingBlock className="py-8 px-7.5">
             <Title className="mb-8 text-black">
@@ -41,28 +50,28 @@ export const PriceAdd = () => {
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
             >
-                {/* 1-й элемент */}
+                {/* 1-й элемент: Реклама */}
                 <motion.div variants={itemVariants}>
                     <PriceTemplate 
-                        price="20к - 30к"
+                        price={price.advertisement}
                         title="Рекламный пост"
                         icon={LinearIcon}
                     />
                 </motion.div>
 
-                {/* 2-й элемент */}
+                {/* 2-й элемент: Интеграция */}
                 <motion.div variants={itemVariants}>
                     <PriceTemplate 
-                        price="20к - 30к"
+                        price={price.integration}
                         title="Интеграция"
                         icon={LineDuotoneIcon}
                     />
                 </motion.div>
 
-                {/* 3-й элемент */}
+                {/* 3-й элемент: Репост */}
                 <motion.div variants={itemVariants}>
                     <PriceTemplate 
-                        price="20к - 30к"
+                        price={price.repost}
                         title="Репост"
                         icon={MessageIcon}
                     /> 

@@ -6,15 +6,17 @@ export const AdminFormCard = ({
     className="",
     children
 }: {
-    title: string,
+    title?: string,
     className?: string,
     children: React.ReactNode
 }) => {
     return (
         <AdminCard className={cn("p-4", className)}>
-            <p className="mb-5 text-white text-[20px] leading-[90%]">
-                {title}
-            </p>
+            {title && (
+                <p className="mb-5 text-white text-[20px] leading-[90%]">
+                    {title}
+                </p>
+            )}
 
             {children}
         </AdminCard>

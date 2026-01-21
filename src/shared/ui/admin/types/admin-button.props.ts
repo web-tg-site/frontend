@@ -1,9 +1,8 @@
-import { ReactNode } from "react";
-import { HTMLMotionProps } from "framer-motion";
+import { ButtonHTMLAttributes, ReactNode } from "react";
 
-export interface AdminButtonProps extends HTMLMotionProps<"button"> {
+export interface AdminButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     children: ReactNode;
     loading?: boolean;
-    href?: never;
-    variant?: 'primary' | 'secondary'; // Добавили вариант
+    href?: never; // Запрещаем передавать href, так как это кнопка
+    variant?: 'primary' | 'secondary';
 }

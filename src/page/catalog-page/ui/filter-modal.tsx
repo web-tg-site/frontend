@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react"
 import { motion, Variants } from "framer-motion"
 import { cn } from "@/shared/utils"
-import { CATEGORIES, SUBSCRIBER_RANGES } from "../config/filter-options"
+import { SUBSCRIBER_RANGES } from "../config/filter-options"
 
+// Иконка стрелки назад
 const ChevronLeft = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="m15 18-6-6 6-6" />
@@ -26,6 +27,7 @@ const useMediaQuery = (query: string) => {
 interface FilterModalProps {
     initialCategories: string[]
     initialSubscriberRangeIndex: number
+    availableCategories: string[] // <--- НОВЫЙ ПРОП: Список доступных категорий с бэка
     onClose: () => void
     onSave: (categories: string[], rangeIndex: number) => void
 }
@@ -33,6 +35,7 @@ interface FilterModalProps {
 export const FilterModal = ({
     initialCategories,
     initialSubscriberRangeIndex,
+    availableCategories, // <--- Получаем здесь
     onClose,
     onSave
 }: FilterModalProps) => {
@@ -84,6 +87,8 @@ export const FilterModal = ({
             <div className={desktop ? "flex-1" : "mb-8"}>
                 <h3 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200">Категория</h3>
                 <div className={cn(desktop ? "grid grid-cols-2 gap-x-4 gap-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar" : "grid grid-cols-1 gap-x-4 gap-y-3")}>
+                    
+                    {/* Кнопка "Все" */}
                     <label className="flex items-center gap-3 cursor-pointer group">
                         <div className={cn("w-5 h-5 shrink-0 rounded-full border border-gray-300 flex items-center justify-center transition-colors",
                             selectedCategories.length === 0 && "bg-primary border-primary"
@@ -94,7 +99,8 @@ export const FilterModal = ({
                         <span className="text-gray-600 group-hover:text-black transition-colors">Все</span>
                     </label>
 
-                    {CATEGORIES.map(cat => {
+                    {/* Рендерим категории из пропса availableCategories */}
+                    {availableCategories.map(cat => {
                         const isSelected = selectedCategories.includes(cat)
                         return (
                             <label key={cat} className="flex items-center gap-3 cursor-pointer group">
@@ -140,15 +146,12 @@ export const FilterModal = ({
 
     return (
         <>
-            {/* Mobile overlay + sheet */}
             <motion.div
                 key="mobile-overlay"
                 variants={backdropVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                // 1. Используем h-[100dvh] для учета адресной строки на iOS
-                // 2. z-[100] чтобы перекрыть все
                 className="fixed top-0 left-0 w-full h-[100dvh] z-[100] flex flex-col bg-black/60 backdrop-blur-sm min-[1025px]:hidden supports-[height:100dvh]:h-[100dvh]"
             >
                 <motion.div variants={headerVariants} className="bg-white rounded-b-[20px] px-4 py-4 mb-2 flex items-center justify-between shadow-lg shrink-0 relative z-20">
@@ -161,11 +164,6 @@ export const FilterModal = ({
 
                 <motion.div variants={sheetVariants} className="bg-white flex-1 rounded-t-[20px] shadow-2xl flex flex-col overflow-hidden relative z-10">
                     <Fields desktop={false} />
-                    
-                    {/* 
-                        3. Добавили pb-[calc(1rem+env(safe-area-inset-bottom))]
-                        Это отступ снизу, который учитывает полоску Home Indicator на iPhone X+
-                    */}
                     <div className="p-4 border-t border-gray-100 bg-white mt-auto shrink-0 relative z-20 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                         <button onClick={handleSave} className="w-full py-3.5 rounded-full bg-primary text-white font-semibold text-lg active:scale-[0.98] transition-transform">
                             Сохранить
@@ -174,7 +172,6 @@ export const FilterModal = ({
                 </motion.div>
             </motion.div>
 
-            {/* Desktop popup */}
             <motion.div
                 key="desktop-popup"
                 variants={popupVariants}

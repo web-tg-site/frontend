@@ -11,10 +11,8 @@ export const AdminChannelsRow = ({
     onEdit,
     onDelete,
     searchTerm = "",
-    withActions = true // <-- Принимаем флаг
+    withActions = true
 }: AdminChannelsRowProps) => {
-
-    // Та же логика сетки, что и в таблице
     const gridClassName = withActions
         ? "grid grid-cols-[0.5fr_2fr_1fr_1fr_1fr_0.8fr] gap-4 items-center"
         : "grid grid-cols-[0.5fr_2.8fr_1fr_1fr_1fr] gap-4 items-center";

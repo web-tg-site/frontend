@@ -3,6 +3,8 @@
 import { useState, useMemo } from "react"
 import { AnimatePresence } from "framer-motion"
 
+import { useCatalog } from "../api/use-catalog";
+
 // --- Swiper Imports ---
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode, Mousewheel } from 'swiper/modules';
@@ -14,20 +16,19 @@ import { Headline, LinkButton, Text } from "@/shared/ui"
 
 // --- Entities & Configs ---
 import { ChannelCard } from "@/entities/channel"
-import { CHANNEL_MOCKS } from "../config/channel-mock"
 import { SUBSCRIBER_RANGES } from "../config/filter-options"
 
 // --- Local Components ---
 import { FilterButton } from "./filter-button"
 import { FilterModal } from "./filter-modal"
-import { cn } from "@/shared/utils"; // Убедитесь, что cn импортирован
 
 // --- Helper: Парсинг подписчиков ---
 const parseSubscribers = (str: string): number => {
+    if (!str) return 0;
     const s = str.toLowerCase().replace(/,/g, '.');
     if (s.includes("млн")) return parseFloat(s) * 1_000_000;
-    if (s.includes("к")) return parseFloat(s) * 1_000;
-    return parseFloat(s);
+    if (s.includes("к") || s.includes("k")) return parseFloat(s) * 1_000;
+    return parseFloat(s) || 0;
 };
 
 export const Catalog = () => {
@@ -35,51 +36,123 @@ export const Catalog = () => {
     const ITEMS_PER_ROW = 3;
     const ROWS_TO_LOAD = 7;
     const BATCH_SIZE = ITEMS_PER_ROW * ROWS_TO_LOAD;
+    const SKELETON_COUNT = 6; // Сколько карточек-скелетонов показывать при загрузке
+
+    // --- DATA FETCHING ---
+    const { data, isLoading: isCatalogLoading } = useCatalog();
+    
+    // Безопасно извлекаем данные
+    const channels = data?.ichannels ?? [];
+    const availableCategories = data?.category ?? [];
 
     // --- STATE ---
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterCategories, setFilterCategories] = useState<string[]>([]);
     const [filterRangeIndex, setFilterRangeIndex] = useState<number>(0);
     const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
-    const [isLoading, setIsLoading] = useState(false);
+    
+    // Локальная загрузка для пагинации (кнопка "Показать еще")
+    const [isMoreLoading, setIsMoreLoading] = useState(false);
 
     // --- ЛОГИКА ФИЛЬТРАЦИИ ---
     const filteredChannels = useMemo(() => {
-        return CHANNEL_MOCKS.filter(channel => {
-            const categoryMatch = filterCategories.length === 0 || filterCategories.includes(channel.category.name);
+        // Если данные еще грузятся, возвращаем пустой массив, чтобы не было ошибок
+        if (isCatalogLoading) return [];
+
+        return channels.filter(channel => {
+            const catName = typeof channel.category === 'string' 
+                ? channel.category 
+                : channel.category?.name;
+
+            const categoryMatch = 
+                filterCategories.length === 0 || 
+                (catName && filterCategories.includes(catName));
+
             const subCount = parseSubscribers(channel.subscribers);
             const range = SUBSCRIBER_RANGES[filterRangeIndex];
             const subsMatch = subCount >= range.min && subCount < range.max;
+            
             return categoryMatch && subsMatch;
         });
-    }, [filterCategories, filterRangeIndex]);
+    }, [channels, filterCategories, filterRangeIndex, isCatalogLoading]);
 
     const currentChannels = filteredChannels.slice(0, visibleCount);
     const hasMore = visibleCount < filteredChannels.length;
 
     // --- ХЕНДЛЕРЫ ---
     const handleShowMore = async () => {
-        setIsLoading(true);
+        setIsMoreLoading(true);
         await new Promise((resolve) => setTimeout(resolve, 600));
         setVisibleCount((prev) => prev + BATCH_SIZE);
-        setIsLoading(false);
+        setIsMoreLoading(false);
     };
 
     const removeCategoryTag = (cat: string) => {
         setFilterCategories(prev => prev.filter(c => c !== cat));
     };
 
-    // Компонент тега (чтобы не дублировать код верстки)
     const TagItem = ({ cat }: { cat: string }) => (
         <button 
             onClick={() => removeCategoryTag(cat)}
             className="px-4 py-2 rounded-full border border-white/30 text-white text-sm hover:bg-white/10 transition-colors whitespace-nowrap flex items-center gap-2"
         >
             {cat}
-            {/* Добавляем крестик визуально */}
             <span className="opacity-60 text-base leading-none">×</span>
         </button>
     );
+
+    // --- RENDER HELPERS ---
+    
+    // Функция для рендера контента сетки
+    const renderGridContent = () => {
+        // 1. Состояние ЗАГРУЗКИ (Показываем скелетоны)
+        if (isCatalogLoading) {
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 mb-15">
+                    {Array.from({ length: SKELETON_COUNT }).map((_, idx) => (
+                        <ChannelCard 
+                            key={`skeleton-${idx}`} 
+                            loading={true}
+                            id={0}
+                            name=""
+                            image=""
+                            subscribers=""
+                            slug=""
+                            price={0}
+                            category={{ id: 0, name: "", icon: "" } as any}
+                        />
+                    ))}
+                </div>
+            );
+        }
+
+        // 2. Состояние "НИЧЕГО НЕ НАЙДЕНО"
+        if (currentChannels.length === 0) {
+            return (
+                <div className="flex flex-col items-center justify-center py-20 text-white/50">
+                    <p className="text-xl">Ничего не найдено</p>
+                    <button 
+                        onClick={() => {
+                            setFilterCategories([]);
+                            setFilterRangeIndex(0);
+                        }}
+                        className="mt-4 text-primary hover:underline"
+                    >
+                        Сбросить фильтры
+                    </button>
+                </div>
+            );
+        }
+
+        // 3. Состояние ДАННЫЕ ЕСТЬ (Показываем карточки)
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 mb-15">
+                {currentChannels.map((channel: any, idx: number) => (
+                    <ChannelCard key={channel.id || idx} {...channel} />
+                ))}
+            </div>
+        );
+    };
 
     return (
         <section className="mt-[106px] mb-[110px] px-7.5 relative">
@@ -93,20 +166,14 @@ export const Catalog = () => {
 
             {/* --- ПАНЕЛЬ УПРАВЛЕНИЯ --- */}
             <div className="flex flex-col mb-9">
-                {/* ВЕРХНИЙ РЯД: Счетчик + (Слайдер Desktop) + Кнопка */}
                 <div className="flex justify-between items-center w-full">
-                    {/* Левая часть: Счетчик */}
+                    {/* Счетчик (если грузится - показываем 0 или прочерк) */}
                     <p className="text-white whitespace-nowrap shrink-0">
-                        {filteredChannels.length} каналов
+                        {isCatalogLoading ? "..." : filteredChannels.length} каналов
                     </p>
 
-                    {/* Правая часть: Desktop Tags + Button */}
                     <div className="flex items-center justify-end gap-3 flex-1 min-w-0 ml-4">
-                        
-                        {/* 
-                            1. DESKTOP TAGS (> 1024px) 
-                            Используем min-[1025px]:block, чтобы показать только на экранах больше 1024px
-                        */}
+                        {/* Tags Swiper */}
                         {filterCategories.length > 0 && (
                             <div className="hidden min-[1025px]:block min-w-0 max-w-full">
                                 <Swiper
@@ -129,14 +196,16 @@ export const Catalog = () => {
                             </div>
                         )}
 
-                        {/* КНОПКА ФИЛЬТРАЦИИ (Всегда на месте) */}
+                        {/* КНОПКА ФИЛЬТРАЦИИ */}
                         <div className="relative shrink-0">
                             <FilterButton 
+                                // Блокируем кнопку пока грузится, если нужно
+                                disabled={isCatalogLoading}
                                 isActive={isFilterOpen || filterCategories.length > 0 || filterRangeIndex !== 0}
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                className={isCatalogLoading ? "opacity-50 cursor-not-allowed" : ""}
                             />
 
-                            {/* МОДАЛКА */}
                             <AnimatePresence>
                                 {isFilterOpen && (
                                     <>
@@ -147,6 +216,7 @@ export const Catalog = () => {
                                         <FilterModal 
                                             initialCategories={filterCategories}
                                             initialSubscriberRangeIndex={filterRangeIndex}
+                                            availableCategories={availableCategories}
                                             onClose={() => setIsFilterOpen(false)}
                                             onSave={(cats, rangeIdx) => {
                                                 setFilterCategories(cats);
@@ -161,11 +231,7 @@ export const Catalog = () => {
                     </div>
                 </div>
 
-                {/* 
-                    2. MOBILE TAGS (<= 1024px)
-                    Сетка тегов, которая появляется под верхней панелью.
-                    Скрыта на min-[1025px]
-                */}
+                {/* Mobile Tags */}
                 {filterCategories.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-4 min-[1025px]:hidden">
                         {filterCategories.map(cat => (
@@ -175,34 +241,15 @@ export const Catalog = () => {
                 )}
             </div>
 
-            {/* --- СЕТКА ТОВАРОВ --- */}
-            {currentChannels.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 mb-15">
-                    {currentChannels.map((channel, idx) => (
-                        <ChannelCard key={`${channel.id}-${idx}`} {...channel} />
-                    ))}
-                </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center py-20 text-white/50">
-                    <p className="text-xl">Ничего не найдено</p>
-                    <button 
-                        onClick={() => {
-                            setFilterCategories([]);
-                            setFilterRangeIndex(0);
-                        }}
-                        className="mt-4 text-primary hover:underline"
-                    >
-                        Сбросить фильтры
-                    </button>
-                </div>
-            )}
+            {/* --- СЕТКА ТОВАРОВ (Вызываем функцию рендера) --- */}
+            {renderGridContent()}
 
-            {/* --- КНОПКА ЗАГРУЗКИ --- */}
-            {hasMore && (
+            {/* --- КНОПКА ПОКАЗАТЬ ЕЩЕ (Скрываем при первичной загрузке) --- */}
+            {!isCatalogLoading && hasMore && (
                 <div className="flex justify-center">
                     <LinkButton 
                         onClick={handleShowMore}
-                        loading={isLoading}
+                        loading={isMoreLoading}
                         type="button"
                     >
                         Смотреть еще
@@ -211,4 +258,4 @@ export const Catalog = () => {
             )}
         </section>
     )
-}   
+}

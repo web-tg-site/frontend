@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { isAxiosError } from "axios"; // 👈 Если axios установлен, лучше импортировать
 
 interface ConfirmOptions {
     title: ReactNode;
@@ -33,25 +34,47 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
         onConfirm: () => {},
     });
     const [isLoading, setIsLoading] = useState(false);
+    
+    // 1. Состояние для ошибки
+    const [error, setError] = useState<string | null>(null);
 
     const confirm = useCallback((opts: ConfirmOptions) => {
         setOptions(opts);
+        setError(null); // Сбрасываем старые ошибки при открытии
         setIsOpen(true);
     }, []);
 
     const close = useCallback(() => {
         setIsOpen(false);
         setIsLoading(false);
+        setError(null); // Сбрасываем ошибки при закрытии
     }, []);
 
     const handleConfirm = async () => {
         setIsLoading(true);
+        setError(null); // Сбрасываем перед новой попыткой
+        
         try {
             await options.onConfirm();
             close();
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
             setIsLoading(false);
+
+            // 2. Обработка ошибки
+            let errorMessage = "Произошла неизвестная ошибка";
+
+            if (isAxiosError(e) && e.response?.data) {
+                // Обработка ошибок NestJS (message может быть строкой или массивом)
+                const msg = e.response.data.message;
+                errorMessage = Array.isArray(msg) ? msg.join(', ') : msg;
+            } else if (e instanceof Error) {
+                errorMessage = e.message;
+            } else if (typeof e === 'string') {
+                errorMessage = e;
+            }
+
+            setError(errorMessage);
         }
     };
 
@@ -74,7 +97,6 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
             <AnimatePresence>
                 {isOpen && (
                     <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
-                        {/* Подложка: убрали blur, оставили только затемнение */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -99,6 +121,17 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                                     </div>
                                 )}
                             </div>
+
+                            {/* 3. Вывод ошибки */}
+                            {error && (
+                                <motion.div 
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    className="mb-6 bg-red-50 text-red-500 px-4 py-3 rounded-xl text-sm font-medium border border-red-100"
+                                >
+                                    {error}
+                                </motion.div>
+                            )}
 
                             <div className="grid grid-cols-2 gap-3">
                                 <button

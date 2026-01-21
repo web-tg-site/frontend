@@ -1,7 +1,6 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation' // Импортируем redirect
 
 export async function setAuthCookie(token: string) {
     console.log('[LOGS][RESPONSE TOKEN]:', token);
@@ -23,5 +22,7 @@ export async function setAuthCookie(token: string) {
         sameSite: 'lax'
     })
 
-    redirect('/admin')
+    return {
+        success: true
+    }
 }

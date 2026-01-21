@@ -1,17 +1,20 @@
+import { ReactNode } from "react";
+
 export interface AdminSelectOption {
-    value: string | number; // 👈 Строка или Число
-    label: string;
+    value: string | number;
+    label: ReactNode ;
+    keywords?: string; // 👈 Поле для поиска (например, "дом главная home")
 }
 
 export interface AdminSelectProps {
-    value?: string | number | null; // 👈 Принимаем число
-    onChange: (value: string | number | null) => void; // 👈 Возвращаем число
-    
+    value: string | number | null;
+    onChange: (value: string | number | null) => void;
     options: AdminSelectOption[];
     placeholder?: string;
-    variant?: 'standard' | 'alternative';
+    variant?: "standard" | "alternative";
     error?: string;
     className?: string;
     disabled?: boolean;
     isLoading?: boolean;
+    isSearchable?: boolean; // 👈 Флаг, включать ли поиск
 }

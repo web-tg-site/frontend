@@ -3,3 +3,4 @@ export * from './landing-block';
 export * from './form';
 export * from './text';
 export * from './admin';
+export * from './loading';

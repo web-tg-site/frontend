@@ -1,33 +1,20 @@
 "use client";
 
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { cn } from "@/shared/utils";
 import { Headline } from "@/shared/ui/text";
-import { 
-    Gamepad2, Landmark, Bitcoin, Plane, Hammer, 
-    GraduationCap, Home, Sparkles, BarChart3, Heart 
-} from "lucide-react";
+// Убрали импорты конкретных иконок (Gamepad2, Landmark и т.д.), так как они приходят строкой
 import { useMatterPhysics } from "../hooks/use-matter-physics";
-
-const TAGS_DATA = [
-    { id: 1, title: "Видеоигры", icon: Gamepad2 },
-    { id: 2, title: "Политика", icon: Landmark },
-    { id: 3, title: "Криптовалюты", icon: Bitcoin },
-    { id: 4, title: "Путешествия", icon: Plane },
-    { id: 5, title: "Строительство", icon: Hammer },
-    { id: 6, title: "Образование", icon: GraduationCap },
-    { id: 7, title: "Уют и комфорт", icon: Home },
-    { id: 8, title: "Красота", icon: Sparkles },
-    { id: 9, title: "Аналитика", icon: BarChart3 },
-    { id: 10, title: "Здоровье", icon: Heart },
-];
+import { useCategories } from "../api/use-categories";
+import { DynamicIcon } from "@/shared/ui/dynamic-icon";
 
 export const LeftOrder = () => {
     const sceneRef = useRef<HTMLDivElement>(null);
     const bubbleElements = useRef<Map<number, HTMLDivElement>>(new Map());
 
-    // Логика физики
-    const { isReady } = useMatterPhysics(sceneRef, TAGS_DATA, bubbleElements);
+    const { data: categories = [] } = useCategories();
+
+    const { isReady } = useMatterPhysics(sceneRef, categories, bubbleElements);
 
     return (
         <div className="bg-primary rounded-2xl min-h-[500px] lg:min-h-[785px] h-full relative overflow-hidden flex flex-col select-none">
@@ -45,12 +32,10 @@ export const LeftOrder = () => {
             <div 
                 ref={sceneRef} 
                 className="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"
-                // ИСПРАВЛЕНИЕ:
-                // 'pan-y' разрешает вертикальный скролл страницы браузером.
-                // Горизонтальные действия и тапы останутся доступны для физики.
                 style={{ touchAction: 'pan-y' }} 
             >
-                {TAGS_DATA.map((tag) => (
+                {/* 3. Рендерим категории, пришедшие с бэкенда */}
+                {categories.map((tag) => (
                     <div
                         key={tag.id}
                         ref={(el) => {
@@ -72,7 +57,13 @@ export const LeftOrder = () => {
                             willChange: 'transform'
                         }}
                     >
-                        <tag.icon className="w-4 h-4 lg:w-7 lg:h-7" strokeWidth={2} />
+                        {/* 4. Используем DynamicIcon для иконки из строки (например "gamepad-2") */}
+                        <DynamicIcon 
+                            name={tag.icon} 
+                            className="w-4 h-4 lg:w-7 lg:h-7" 
+                            strokeWidth={2} 
+                        />
+                        {/* 5. Выводим title (так как в маппере хука ты назвал поле title) */}
                         <span>{tag.title}</span>
                     </div>
                 ))}

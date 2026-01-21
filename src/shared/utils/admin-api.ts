@@ -15,17 +15,26 @@ $apiAdmin.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // Если пришел 401 (Unauthorized) и это не повторная попытка
+        // ✅ ИСПРАВЛЕНИЕ:
+        // Проверяем, не является ли этот запрос попыткой логина.
+        // Если URL запроса содержит '/login', мы просто возвращаем ошибку,
+        // чтобы React компонент мог вывести сообщение "Неверный пароль".
+        if (error.config.url && error.config.url.includes('/login')) {
+            throw error;
+        }
+
+        // Если пришел 401 (Unauthorized) и это НЕ логин
         if (error.response?.status === 401 && error.config && !error.config._isRetry) {
             originalRequest._isRetry = true;
             
-            // Токен протух или неверен.
-            // Редиректим на страницу входа
             if (typeof window !== 'undefined') {
-                window.location.href = '/admin/auth';
+                // Дополнительная защита: не перезагружать, если мы уже на странице авторизации
+                if (window.location.pathname !== '/admin/auth') {
+                    window.location.href = '/admin/auth';
+                }
             }
         }
         
         throw error;
     }
-);
+)

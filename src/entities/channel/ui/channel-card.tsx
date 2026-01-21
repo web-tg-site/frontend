@@ -1,12 +1,12 @@
 'use client'
 
 import Image from "next/image";
-import { Plus } from "../icons/plus";
+import Link from "next/link";
+import { Check, Plus, Trash } from "lucide-react";
 import { Text } from "@/shared/ui";
-import { formatPrice } from "@/shared/utils";
+import { cn, formatPrice } from "@/shared/utils";
 import { ChannelCardProps } from "../types/channel-card.props";
 import { useCollections } from "@/shared/store/use-collections";
-import Link from "next/link";
 
 export const ChannelCard = ({
     id,
@@ -16,84 +16,107 @@ export const ChannelCard = ({
     subscribers,
     price,
     loading,
-    haveAddButton=true
+    haveAddButton = true,
+    type = "site",
+    isSelected = false,
+    buttonAction = 'add',
+    slug,
+    onAdminClick
 }: ChannelCardProps) => {
     const openModal = useCollections((state) => state.openModal);
 
-    // --- 1. SKELETON ---
+    const isAdmin = type === 'admin';
+
     if (loading) {
         return (
-            <div className="bg-white py-3 px-4 rounded-[20px] border border-transparent">
+            <div className={cn(
+                "py-3 px-4 rounded-[20px] border border-transparent",
+                isAdmin ? "bg-[#282828]" : "bg-white"
+            )}>
                 <div className="flex items-center mb-[21px]">
-                    <div className="w-[100px] h-[100px] bg-gray-200 rounded-[20px] mr-5 animate-pulse shrink-0" />
+                    <div className={cn("w-[100px] h-[100px] rounded-[20px] mr-5 animate-pulse shrink-0", isAdmin ? "bg-white/5" : "bg-gray-200")} />
                     <div className="flex-1">
-                        <div className="h-7 w-3/4 bg-gray-200 rounded-lg mb-2 animate-pulse" />
+                        <div className={cn("h-7 w-3/4 rounded-lg mb-2 animate-pulse", isAdmin ? "bg-white/5" : "bg-gray-200")} />
                         <div className="flex items-center gap-1.5">
-                            <div className="w-[9px] h-[9px] bg-gray-200 rounded-full animate-pulse" />
-                            <div className="h-4 w-1/3 bg-gray-200 rounded-md animate-pulse" />
+                            <div className={cn("w-[9px] h-[9px] rounded-full animate-pulse", isAdmin ? "bg-white/5" : "bg-gray-200")} />
+                            <div className={cn("h-4 w-1/3 rounded-md animate-pulse", isAdmin ? "bg-white/5" : "bg-gray-200")} />
                         </div>
                     </div>
-                    <div className="mb-auto ml-auto w-10.5 h-10.5 rounded-full bg-gray-200 animate-pulse shrink-0" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                    <div className="h-[60px] w-full bg-gray-100 rounded-2xl animate-pulse border border-black/5" />
-                    <div className="h-[60px] w-full bg-gray-100 rounded-2xl animate-pulse border border-black/5" />
+                    <div className={cn("h-[60px] w-full rounded-2xl animate-pulse", isAdmin ? "bg-white/5" : "bg-gray-100")} />
+                    <div className={cn("h-[60px] w-full rounded-2xl animate-pulse", isAdmin ? "bg-white/5" : "bg-gray-100")} />
                 </div>
             </div>
         )
     }
 
-    // --- 2. MAIN CARD ---
-    return (
-        <Link 
-            href={`/channel/${id}`} 
-            // 👇 ДОБАВИЛИ КЛАССЫ СЮДА:
-            // transition-all duration-300 — плавная анимация
-            // hover:-translate-y-1 — поднимает карточку на 4px вверх
-            // hover:shadow-xl — добавляет глубокую тень
-            className="bg-white py-3 px-4 rounded-[20px] group block transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-        >
+    const handleButtonClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (isAdmin && onAdminClick) {
+            onAdminClick(id);
+        } else {
+            openModal(id, image);
+        }
+    };
+
+    const cardClassName = cn(
+        "py-3 px-4 rounded-[20px] group block transition-all duration-300",
+        !isAdmin && "bg-white hover:-translate-y-1 hover:shadow-xl",
+        isAdmin && "bg-[#1E1E1E] border border-transparent hover:border-white/10"
+    );
+
+    const cardContent = (
+        <>
             <div className="flex items-center mb-[21px]">
-                {/* Добавил transition-opacity для картинки, чтобы она чуть "мигала" при наведении */}
                 <Image 
                     width={100}
                     height={100}
                     src={image}
                     alt={name}
-                    className="w-[100px] h-[100px] object-cover rounded-[20px] mr-5 shrink-0 transition-opacity duration-300 group-hover:opacity-90"
+                    className="w-[100px] h-[100px] object-cover rounded-[20px] mr-5 shrink-0 transition-opacity duration-300 group-hover:opacity-90 bg-gray-800"
                 />
 
-                <div>
-                    <p className="mb-1.5 lg:text-[28px] text-[20px] font-medium leading-tight line-clamp-2">
+                <div className="flex-1 min-w-0 pr-2">
+                    <p className={cn(
+                        "mb-1.5 lg:text-[24px] text-[20px] font-medium leading-tight line-clamp-2",
+                        isAdmin ? "text-white" : "text-black"
+                    )}>
                         {name}
                     </p>
 
                     <div className="flex items-center gap-1.5">
                         <span 
                             style={{ backgroundColor: category.color }}
-                            className="lg:w-[9px] w-1.5 lg:h-[9px] h-1.5 rounded-full"
+                            className="lg:w-[9px] w-1.5 lg:h-[9px] h-1.5 rounded-full shrink-0"
                         />
                         <p
                             style={{ color: category.color }}
-                            className="font-medium text-[14px] lg:text-[16px]"
+                            className="font-medium text-[14px] lg:text-[16px] truncate"
                         >
                             {category.name}
                         </p>
                     </div>
                 </div>
 
-                {/* Кнопка с фиксом клика */}
                 {haveAddButton && (
                     <button 
-                        onClick={(e) => {
-                            e.preventDefault() 
-                            e.stopPropagation()
-                            openModal(id)
-                        }}
-                        // Добавил scale при ховере на саму кнопку для лучшего фидбека
-                        className="mb-auto ml-auto border border-black bg-black transition-all hover:scale-105 hover:bg-black/80 cursor-pointer w-10.5 h-10.5 rounded-full flex items-center justify-center text-white shrink-0 z-10"
+                        onClick={handleButtonClick}
+                        className={cn(
+                            "mb-auto ml-auto cursor-pointer w-10.5 h-10.5 rounded-full flex items-center justify-center shrink-0 z-10 transition-all hover:scale-105",
+                            !isAdmin && "bg-black text-white hover:bg-black/80",
+                            isAdmin && buttonAction === 'add' && !isSelected && "bg-white text-black hover:bg-gray-200",
+                            isAdmin && buttonAction === 'add' && isSelected && "bg-[#22C55E] text-white",
+                            isAdmin && buttonAction === 'delete' && "bg-[#DD2C00] text-white hover:bg-[#BF2600]"
+                        )}
                     >
-                        <Plus />
+                        {isAdmin && buttonAction === 'delete' ? (
+                            <Trash size={18} />
+                        ) : (
+                            isAdmin && isSelected ? <Check size={20} /> : <Plus size={20} />
+                        )}
                     </button>
                 )}
             </div>
@@ -102,30 +125,52 @@ export const ChannelCard = ({
                 <BottomCard 
                     topText={subscribers}
                     bottomText="Подписчиков"
+                    isAdmin={isAdmin}
                 />
 
                 <BottomCard 
                     topText={`${formatPrice(price)}р`}
                     bottomText="Стоимость"
+                    isAdmin={isAdmin}
                 />
             </div>
+        </>
+    );
+
+    if (isAdmin) {
+        return (
+            <div className={cardClassName}>
+                {cardContent}
+            </div>
+        );
+    }
+
+    return (
+        <Link href={`/channel/${slug}`} className={cardClassName}>
+            {cardContent}
         </Link>
-    )
+    );
 }
 
 const BottomCard = ({
     topText,
-    bottomText
+    bottomText,
+    isAdmin
 }: {
     topText: string,
-    bottomText: string
+    bottomText: string,
+    isAdmin: boolean
 }) => {
     return (
-        <div className="w-full pt-1 pb-2 px-2 border border-black/5 bg-[#F9F9F9] text-center rounded-2xl transition-colors duration-300 group-hover:bg-[#f0f0f0]">
-            <Text variant="2" className="text-black">
+        <div className={cn(
+            "w-full pt-1 pb-2 px-2 border text-center rounded-2xl transition-colors duration-300",
+            !isAdmin && "border-black/5 bg-[#F9F9F9] group-hover:bg-[#f0f0f0]",
+            isAdmin && "border-transparent bg-[#282828]" 
+        )}>
+            <Text variant="2" className={cn(isAdmin ? "text-white" : "text-black")}>
                 {topText}
             </Text>
-            <Text variant="4" className="text-black/60">
+            <Text variant="4" className={cn(isAdmin ? "text-[#656565]" : "text-black/60")}>
                 {bottomText}
             </Text>
         </div>

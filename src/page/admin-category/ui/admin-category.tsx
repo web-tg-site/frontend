@@ -1,0 +1,79 @@
+'use client'
+
+import { useState } from "react"
+import { Search } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query" // 👈 Для обновления данных
+
+import { AdminPageTitle } from "@/shared/ui/admin/ui/admin-page-title"
+import { AdminInput } from "@/shared/ui/admin/ui/form/admin-input"
+
+import { useAdminCategoriesTable } from "../api/use-admin-categories-table"
+import { AdminCategoriesTable } from "./admin-categories-table"
+import { deleteCategory } from "../api/delete-category"
+import { useConfirm } from "@/shared/lib/confirm-dialog"
+
+export const AdminCategory = ({
+    type="admin"
+}: {
+    type?: 'admin' | 'moderation'
+}) => {
+    const router = useRouter();
+    const queryClient = useQueryClient();
+    const { confirm } = useConfirm(); // 👈 Достаем функцию подтверждения
+
+    // 1. Получаем данные
+    const { data: categoryData, isLoading: categoryLoading } = useAdminCategoriesTable()
+    
+    // 2. Состояние поиска
+    const [searchTerm, setSearchTerm] = useState("")
+
+    // 3. Фильтрация данных
+    const filteredItems = categoryData?.filter(category => 
+        category.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || []
+
+    // 4. Обработчики действий
+    const handleEdit = (id: number | string) => {
+        router.push(`/admin/category/edit/${id}`);
+    }
+
+    const handleDelete = (id: number | string) => {
+        confirm({
+            title: "Удаление категории",
+            description: "Вы уверены, что хотите удалить эту категорию? Это действие необратимо.",
+            confirmText: "Удалить",
+            cancelText: "Отмена",
+            onConfirm: async () => {
+                await deleteCategory(Number(id));
+                
+                queryClient.invalidateQueries({ queryKey: ["Admin Categories Table"] });
+            }
+        });
+    }
+
+    return (
+        <div>
+            <AdminPageTitle title="Редактирование категорий" />
+
+            <div className="mb-7.5">
+                <AdminInput 
+                    variant="alternative"
+                    icon={<Search size={16} className="text-white"/>}
+                    placeholder="Поиск по названию..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
+            <AdminCategoriesTable 
+                items={filteredItems}
+                isLoading={categoryLoading}
+                searchTerm={searchTerm}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                withActions={type === 'admin'}
+            />
+        </div>
+    )
+}

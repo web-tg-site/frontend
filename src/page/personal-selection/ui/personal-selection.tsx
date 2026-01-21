@@ -1,17 +1,42 @@
 'use client'
 
 import { ChannelCard } from "@/entities/channel"
-import { CHANNEL_MOCK } from "@/page/catalog-page/config/channel-mock" // Убедитесь, что путь верный
-import { Headline, LandingBlock, Title } from "@/shared/ui"
+import { Headline, LandingBlock, Loading, Title } from "@/shared/ui"
 import { cn } from "@/shared/utils"
 import { AnimatedCounter, BrandBadge, FallingTags } from "@/widgets/personal-selection"
 import { WhiteBlockTemplate } from "@/widgets/personal-selection/ui/white-block-template"
 import { motion, Variants } from "framer-motion"
 import Image from "next/image"
+import { useGetPersonalSelection } from "../api/use-get-personal-selection"
+import { notFound } from "next/navigation"
+import { parsePrice } from "../helpers/parse-price"
 
-export const PersonalSelection = () => {
-    // Считаем сумму
-    const totalPrice = CHANNEL_MOCK.reduce((acc, channel) => acc + channel.price, 0);
+export const PersonalSelection = ({
+    slug
+}: {
+    slug: string
+}) => {
+    const { data: personalSelection, isLoading } = useGetPersonalSelection(slug);
+
+    if(isLoading) {
+        return (
+            <Loading 
+                title="Загрузка подробки..."
+            />
+        )
+    }
+
+    if(!personalSelection) {
+        return notFound();
+    }
+
+    console.log(personalSelection.formats);
+
+    const status = personalSelection.status.toLowerCase();
+
+    if(status === 'draft' || status === 'archive') {
+        return notFound();
+    }
 
     const containerVariants: Variants = {
         hidden: { opacity: 0 },
@@ -48,8 +73,8 @@ export const PersonalSelection = () => {
                     <Headline variant="h2" className="max-w-[1000px] font-normal leading-tight lg:mb-13 mb-3.5 text-[30px] min-[500px]:text-[60px] lg:text-[100px]">
                         Персональная подборка каналов для
                         <BrandBadge 
-                            text="SlayMedia" 
-                            color="#cf3bf6" 
+                            text={personalSelection.for.name}
+                            color={personalSelection.for.color}
                         />
                     </Headline>
 
@@ -59,7 +84,6 @@ export const PersonalSelection = () => {
                 </div>
             </div>
 
-            {/* БЛОК 2: Анализ ниши (Белые карточки) */}
             <LandingBlock className="px-7.5 py-10.5 mb-15">
                 <Headline variant="h5" className="text-black mb-15">
                     Анализ вашей ниши
@@ -72,7 +96,7 @@ export const PersonalSelection = () => {
                         </Title>
 
                         <p className="text-[20px] leading-[110%] text-black/60">
-                            Повысить узнаваемость и сформировать доверие к продукту за счёт экспертной подачи и честной коммуникации. Кампания направлена на демонстрацию эффективности и ценностей бренда, а также на стимулирование интереса к пробе продукта 
+                            {personalSelection.goal}
                         </p>
                     </WhiteBlockTemplate>
 
@@ -84,7 +108,7 @@ export const PersonalSelection = () => {
                             )}
                         >
                             <Image 
-                                src='/woman.png'
+                                src={`/peronal-selection/${personalSelection.consumer.gender}.png`}
                                 alt='женищна хз'
                                 width={103}
                                 height={103}
@@ -92,11 +116,11 @@ export const PersonalSelection = () => {
                             />
                         </div>
                         <Title className="mb-6 text-black">
-                            Осознанные бьюти-потребители
+                            {personalSelection.consumer.title}
                         </Title>
 
                         <p className="text-[20px] leading-[110%] text-black/60">
-                            Интересуются составами, активами, доказательной косметологией. Читают обзоры, сравнивают бренды, не покупают импульсивно
+                            {personalSelection.consumer.description}
                         </p>
                     </WhiteBlockTemplate>
 
@@ -113,7 +137,7 @@ export const PersonalSelection = () => {
                             whileInView="visible"
                             viewport={{ once: true, amount: 0.2 }}
                         >
-                            {items.map((item, idx) => (
+                            {personalSelection.formats.map((item, idx) => (
                                 <motion.div
                                     key={idx}
                                     variants={itemVariants}
@@ -143,7 +167,7 @@ export const PersonalSelection = () => {
                 </Title>
 
                 <div className="grid lg:grid-cols-3 min-[500px]:grid-cols-2 grid-cols-1 gap-4 mb-8">
-                    {CHANNEL_MOCK.map((channel, idx) => (
+                    {personalSelection.channels.map((channel, idx) => (
                         <ChannelCard 
                             key={idx}
                             {...channel}
@@ -158,7 +182,7 @@ export const PersonalSelection = () => {
                     </Title>
 
                     <AnimatedCounter 
-                        value={totalPrice} 
+                        value={parsePrice(personalSelection.total)} 
                         className="text-white lg:text-[36px] min-[500px]:text-[28px] text-[20px] font-medium"
                     />
                 </div>

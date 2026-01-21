@@ -6,21 +6,23 @@ export interface Collection {
     name: string
     createdAt: number
     channelIds: number[]
-    image: string | null // 👇 1. Добавили поле для обложки
+    image: string | null
 }
 
 interface CollectionsStore {
     collections: Collection[]
+    
+    // Состояние модалки
     isModalOpen: boolean
     activeChannelId: number | null
+    activeChannelImage: string | null // 👈 Добавили хранение картинки
 
-    openModal: (channelId: number) => void 
+    openModal: (channelId: number, image?: string) => void 
     closeModal: () => void
     
     createCollection: (name: string) => void
     deleteCollection: (id: string) => void
     
-    // 👇 2. Обновили сигнатуру метода: теперь ждем image
     addChannelToCollection: (collectionId: string, channelId: number, channelImage: string) => void
     removeChannelFromCollection: (collectionId: string, channelId: number) => void
 }
@@ -31,9 +33,21 @@ export const useCollections = create<CollectionsStore>()(
             collections: [],
             isModalOpen: false,
             activeChannelId: null,
+            activeChannelImage: null,
 
-            openModal: (channelId) => set({ isModalOpen: true, activeChannelId: channelId }),
-            closeModal: () => set({ isModalOpen: false, activeChannelId: null }),
+            // 👇 1. При открытии запоминаем ID и Image
+            openModal: (channelId, image = "") => set({ 
+                isModalOpen: true, 
+                activeChannelId: channelId,
+                activeChannelImage: image 
+            }),
+            
+            // 👇 При закрытии очищаем всё
+            closeModal: () => set({ 
+                isModalOpen: false, 
+                activeChannelId: null,
+                activeChannelImage: null
+            }),
 
             createCollection: (name) => {
                 const newCollection: Collection = {
@@ -41,7 +55,7 @@ export const useCollections = create<CollectionsStore>()(
                     name,
                     createdAt: Date.now(),
                     channelIds: [],
-                    image: null // Изначально обложки нет
+                    image: null
                 }
                 set((state) => ({
                     collections: [newCollection, ...state.collections]
@@ -54,19 +68,17 @@ export const useCollections = create<CollectionsStore>()(
                 }))
             },
 
-            // 👇 3. Логика сохранения обложки
             addChannelToCollection: (collectionId, channelId, channelImage) => {
                 set((state) => ({
                     collections: state.collections.map((col) => {
                         if (col.id === collectionId) {
-                            // Проверка на дубликаты ID
+                            // Если канал уже есть — возвращаем как есть
                             if (col.channelIds.includes(channelId)) return col
 
                             return { 
                                 ...col, 
                                 channelIds: [...col.channelIds, channelId],
-                                // ЕСЛИ картинки нет — ставим текущую.
-                                // ЕСЛИ картинка есть — оставляем старую (ведь это обложка ПЕРВОГО канала).
+                                // 👇 2. Если обложки нет — ставим channelImage. Если есть — оставляем старую.
                                 image: col.image ? col.image : channelImage
                             }
                         }
@@ -80,12 +92,9 @@ export const useCollections = create<CollectionsStore>()(
                     collections: state.collections.map((col) => {
                         if (col.id === collectionId) {
                             const newIds = col.channelIds.filter(id => id !== channelId)
-                            // Опционально: Если удалили все каналы, можно сбросить обложку
-                            // image: newIds.length === 0 ? null : col.image 
-                            return { 
-                                ...col, 
-                                channelIds: newIds
-                            }
+                            // Опционально: можно сбрасывать обложку, если каналов стало 0
+                            // const newImage = newIds.length === 0 ? null : col.image;
+                            return { ...col, channelIds: newIds }
                         }
                         return col
                     })
@@ -95,6 +104,7 @@ export const useCollections = create<CollectionsStore>()(
         {
             name: 'sway-user-collections',
             storage: createJSONStorage(() => localStorage),
+            partialize: (state) => ({ collections: state.collections }),
         }
     )
 )

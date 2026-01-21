@@ -4,6 +4,7 @@ import "@/shared/styles/globals.css";
 import { Header } from "@/widgets/header";
 import { Footer } from "@/widgets/footer";
 import { GlobalCollectionModal } from "@/features/modal-collection/ui/global-collection-modal";
+import { QueryProvider } from "@/shared/providers";
 
 const onest = Onest({
   subsets: ["latin", "cyrillic"],
@@ -76,11 +77,13 @@ export default function RootLayout({
         className={`${onest.className} antialiased bg-background`}
         suppressHydrationWarning
       >
-        <Header />
-        {children}
-        <Footer />
+        <QueryProvider>
+          <Header />
+          {children}
+          <Footer />
 
-        <GlobalCollectionModal />
+          <GlobalCollectionModal />
+        </QueryProvider>
         
         <script
           type="application/ld+json"

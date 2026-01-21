@@ -1,21 +1,33 @@
 'use client'
 
-import { Headline, LinkButton, Text } from "@/shared/ui"
+import { Headline, LinkButton, Loading, Text, Title } from "@/shared/ui"
 import { Category } from "@/shared/ui/category"
 import { CrumbItem, Crumbs } from "@/shared/ui/crumbs"
-import { Heart } from "lucide-react"
 import { useCollections } from "@/shared/store/use-collections"
 import { LectureHall, Content, PriceAdd } from "@/widgets/channel"
 import { ChannelHeaderCards } from "@/widgets/channel/ui/header-cards"
-
-const MOCK_ID = 1;
+import { useGetChannel } from "../api/use-get-channel"
+import { notFound } from "next/navigation"
 
 export const Channel = ({
-    id
+    slug
 }: {
-    id: string
+    slug: string
 }) => {
-    const openModal = useCollections((state) => state.openModal)
+    const openModal = useCollections((state) => state.openModal);
+    const { data: channel, isLoading } = useGetChannel(slug);
+
+    if (isLoading) {
+        return (
+            <Loading 
+                title="Загрузка канала..."
+            />
+        )
+    }
+
+    if (!channel) {
+        return notFound();
+    }
     
     const crumbs: CrumbItem[] = [
         {
@@ -27,7 +39,7 @@ export const Channel = ({
             href: '/catalog'
         },
         {
-            label: 'Критик в шёлковом халате'
+            label: channel.name
         }
     ]
 
@@ -37,33 +49,33 @@ export const Channel = ({
                 <Crumbs items={crumbs} className="mb-8" />
 
                 <Category 
-                    icon={Heart}
-                    title="Красота"
-                    color="#FF383C"
+                    icon={channel.category.icon}
+                    title={channel.category.name}
+                    color={channel.category.color}
                     className="mb-7"
                 />
 
                 <div className="flex gap-[51px] items-start">
                     <div className="flex-1">
                         <Headline variant="h4" className="mb-4 lg:mb-7">
-                            Критик в шёлковом халате
+                            {channel.name}
                         </Headline>
 
                         <div className="hidden max-[500px]:block mb-4">
                             <ChannelHeaderCards 
-                                subs="200к"
-                                coast="20 000 ₽"
-                                image="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=200&auto=format&fit=crop"
+                                subs={channel.subscribers}
+                                coast={channel.coast}
+                                image={channel.image}
                             />
                         </div>
 
                         <Text className="text-white/70 lg:mb-9 mb-7">
-                            Телеграм-канал о красоте без иллюзий и рекламы. Честные разборы бьюти-трендов, средств и процедур, эстетика ухода и ироничный взгляд на индустрию. Коротко, по делу и со вкусом
+                            {channel.description}
                         </Text>
 
                         <LinkButton 
                             className="text-[18px] h-11"
-                            onClick={() => openModal(MOCK_ID)}
+                            onClick={() => openModal(channel.id, channel.image)}
                         >
                             Добавить в подборку
                         </LinkButton>
@@ -71,20 +83,33 @@ export const Channel = ({
 
                     <div className="block max-[500px]:hidden">
                         <ChannelHeaderCards 
-                            subs="200к"
-                            coast="20 000 ₽"
-                            image="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=200&auto=format&fit=crop"
+                            subs={channel.subscribers}
+                            coast={channel.coast}
+                            image={channel.image}
                         />
                     </div>
                 </div>
 
             </div>
             <div className="grid grid-cols-1 gap-2.5">
-                <LectureHall />
+                <LectureHall 
+                    activePercentage={channel.lectureHall.activePercentage}
+                    statsData={channel.lectureHall.statsData}
+                    interestsItems={channel.lectureHall.interestsItems}
+                    geographyItems={channel.lectureHall.geographyItems}
+                    consumption={channel.lectureHall.frequency}
+                    howRead={channel.lectureHall.howRead}
+                    reaction={channel.lectureHall.reaction}
+                    frequency={channel.lectureHall.frequency}
+                />
 
-                <Content />
+                <Content
+                    {...channel.content}
+                />
 
-                <PriceAdd />
+                <PriceAdd 
+                    price={channel.priceAdd}
+                />
             </div>
         </section>
     )

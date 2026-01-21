@@ -1,6 +1,7 @@
 export interface ChannelResponse {
     description: string;
     id: number;
+    slug: string;
     name: string;
     image: string;
     subscribers: string;
@@ -21,7 +22,7 @@ export interface ChannelResponse {
             reposts: number;
         };
         interestsItems: string[];
-        gepgraphyItems: {
+        geographyItems: {
             name: string;
             percent: number;
         }[]

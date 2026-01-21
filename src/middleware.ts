@@ -3,31 +3,34 @@ import type { NextRequest } from 'next/server'
 
 const LOGIN_ROUTE = '/admin/auth'
 
+// Пути, закрытые для модераторов
+const RESTRICTED_FOR_MODERATORS = [
+    '/admin/category',
+    '/admin/channels',
+    '/admin/hero',
+    '/admin/roles'
+]
+
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
     const token = request.cookies.get('accessToken')?.value
 
     console.log(`[MW] Path: ${pathname} | Token: ${token ? 'YES' : 'NO'}`)
 
-    // Приводим путь к единому виду (убираем слэш в конце, если есть, чтобы /admin/auth/ совпадало с /admin/auth)
     const normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
     
     const isLoginPage = normalizedPath === LOGIN_ROUTE
-    // Проверяем, что это админка (на всякий случай, хотя matcher уже отфильтровал)
     const isAdminSection = normalizedPath.startsWith('/admin')
 
-    // === СЦЕНАРИЙ 1: Пользователь с токеном пытается зайти на страницу входа ===
+    // === СЦЕНАРИЙ 1: Пользователь с токеном на странице входа ===
     if (isLoginPage && token) {
-        console.log('[MW] User authorized -> Redirecting to /admin')
         return NextResponse.redirect(new URL('/admin', request.url))
     }
 
-    // === СЦЕНАРИЙ 2: Защита остальных страниц админки ===
+    // === СЦЕНАРИЙ 2: Защита админки ===
     if (isAdminSection && !isLoginPage) {
         
-        // Если нет токена — отдаем 404
         if (!token) {
-            console.log('[MW] No token -> Rewrite 404')
             return NextResponse.rewrite(new URL('/404', request.url))
         }
 
@@ -46,15 +49,29 @@ export async function middleware(request: NextRequest) {
             })
 
             if (!response.ok) {
-                console.log('[MW] API check failed')
                 throw new Error('Auth failed')
             }
 
             const profile = await response.json()
 
+            // 1. Базовая проверка роли
             if (profile.type !== 'admin' && profile.type !== 'moderator') {
-                console.log('[MW] Bad role -> Rewrite 404')
                 return NextResponse.rewrite(new URL('/404', request.url))
+            }
+
+            // 2. ПРОВЕРКА МОДЕРАТОРА НА ЗАПРЕЩЕННЫЕ ПУТИ
+            if (profile.type === 'moderator') {
+                // Проверяем, начинается ли путь с запрещенного
+                // Например, /admin/category/create начнется с /admin/category
+                const isRestricted = RESTRICTED_FOR_MODERATORS.some(path => 
+                    normalizedPath.startsWith(path)
+                )
+
+                if (isRestricted) {
+                    console.log(`[MW] Moderator restricted access: ${pathname} -> Rewrite 404`)
+                    // Скрываем существование страницы
+                    return NextResponse.rewrite(new URL('/404', request.url))
+                }
             }
 
             return NextResponse.next()
@@ -62,6 +79,8 @@ export async function middleware(request: NextRequest) {
         } catch (error) {
             console.error('[MW] Error:', error)
             const response = NextResponse.rewrite(new URL('/404', request.url))
+            // Удаляем куку только если ошибка авторизации, чтобы не зациклить
+            // Но в данном контексте безопасно удалить
             response.cookies.delete('accessToken')
             return response
         }
@@ -71,9 +90,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    // ИСПРАВЛЕНО: Добавляем '/admin' отдельно, чтобы ловить корень
     matcher: [
-        '/admin',           // Ловит ровно /admin
-        '/admin/:path*'     // Ловит /admin/auth, /admin/users и т.д.
+        '/admin',
+        '/admin/:path*'
     ],
 }

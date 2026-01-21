@@ -8,6 +8,7 @@ export const NAV_DATA: Navigation[] = [
         name: "Редактировать каталог",
         href: "/admin/channels", // Ссылка на редактирование
         roles: ['admin'], 
+        additionalHrefs: ['/admin/channels/edit']
     },
     {
         icon: Plus,
@@ -19,7 +20,8 @@ export const NAV_DATA: Navigation[] = [
         icon: FolderPen,
         name: "Редактировать категории",
         href: "/admin/category",
-        roles: ['admin']
+        roles: ['admin'],
+        additionalHrefs: ['/admin/category/edit']
     },
     {
         icon: FolderPlus,
@@ -54,11 +56,13 @@ export const NAV_DATA: Navigation[] = [
         name: "Персональная подборка",
         href: "/admin/personal-selection",
         roles: ['admin', 'moderator'], 
+        additionalHrefs: ['/admin/personal-selection/edit', '/admin/personal-selection/create']
     },
     {
         icon: UsersRound,
         name: "Роли и права",
         href: "/admin/roles",
-        roles: ['admin']
+        roles: ['admin'],
+        additionalHrefs: ['/admin/roles/create', '/admin/roles/edit']
     }
 ];

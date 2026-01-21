@@ -4,19 +4,13 @@ import React, { useEffect, useRef } from "react";
 import Matter from "matter-js";
 import { useRouter } from "next/navigation";
 import { cn } from "@/shared/utils";
-import { 
-    Camera, Code, Bitcoin, Mic, BookOpen, Briefcase, 
-    Plane, Gamepad2, Heart, GraduationCap, 
-    Apple, ShoppingBag, Landmark, 
-    BarChart3, Rocket, Megaphone, Tag, Home, 
-    BrainCircuit, Lightbulb, Languages, TrendingUp, Sparkles, LucideIcon 
-} from "lucide-react";
+import { DynamicIcon } from "@/shared/ui/dynamic-icon";
 
-interface BubbleData {
+export interface BubbleData {
     id: number;
     title: string;
-    icon: LucideIcon;
-    colorClass: string;
+    icon: string;
+    color: string; // ✅ Теперь здесь HEX код
     href: string;
 }
 
@@ -24,45 +18,49 @@ interface MouseConstraintEvent extends Matter.IEvent<Matter.MouseConstraint> {
     body?: Matter.Body;
 }
 
-const BUBBLES_DATA: BubbleData[] = [
-    { id: 1, title: "Фотография", icon: Camera, colorClass: "bg-orange-500", href: "/catalog/photo" },
-    { id: 2, title: "Правильное питание", icon: Apple, colorClass: "bg-green-600", href: "/catalog/nutrition" },
-    { id: 3, title: "Наука", icon: BookOpen, colorClass: "bg-teal-500", href: "/catalog/science" },
-    { id: 4, title: "Подкасты", icon: Mic, colorClass: "bg-cyan-500", href: "/catalog/podcasts" },
-    { id: 5, title: "Обзоры покупок", icon: ShoppingBag, colorClass: "bg-indigo-600", href: "/catalog/shopping" },
-    { id: 6, title: "Криптовалюты", icon: Bitcoin, colorClass: "bg-emerald-500", href: "/catalog/crypto" },
-    { id: 7, title: "Политика", icon: Landmark, colorClass: "bg-blue-600", href: "/catalog/politics" },
-    { id: 8, title: "Аналитика", icon: BarChart3, colorClass: "bg-fuchsia-600", href: "/catalog/analytics" },
-    { id: 9, title: "Мемы", icon: BarChart3, colorClass: "bg-rose-600", href: "/catalog/memes" },
-    { id: 10, title: "Программирование", icon: Code, colorClass: "bg-blue-500", href: "/catalog/programming" },
-    { id: 11, title: "Стартапы", icon: Rocket, colorClass: "bg-red-500", href: "/catalog/startups" },
-    { id: 12, title: "Маркетинг", icon: Megaphone, colorClass: "bg-orange-600", href: "/catalog/marketing" },
-    { id: 13, title: "Акции и купоны", icon: Tag, colorClass: "bg-yellow-500", href: "/catalog/sales" },
-    { id: 14, title: "Уют и комфорт", icon: Home, colorClass: "bg-purple-600", href: "/catalog/home" },
-    { id: 15, title: "Здоровье", icon: Heart, colorClass: "bg-green-500", href: "/catalog/health" },
-    { id: 16, title: "Видеоигры", icon: Gamepad2, colorClass: "bg-red-600", href: "/catalog/games" },
-    { id: 17, title: "Путешествия", icon: Plane, colorClass: "bg-orange-500", href: "/catalog/travel" },
-    { id: 18, title: "Образование", icon: GraduationCap, colorClass: "bg-blue-500", href: "/catalog/education" },
-    { id: 19, title: "Нейросети", icon: BrainCircuit, colorClass: "bg-violet-600", href: "/catalog/ai" },
-    { id: 20, title: "Лайфхаки", icon: Lightbulb, colorClass: "bg-teal-600", href: "/catalog/lifehacks" },
-    { id: 21, title: "Бизнес", icon: Briefcase, colorClass: "bg-amber-700", href: "/catalog/business" },
-    { id: 22, title: "Искусство", icon: Sparkles, colorClass: "bg-orange-400", href: "/catalog/art" },
-    { id: 23, title: "Иностранные языки", icon: Languages, colorClass: "bg-yellow-400", href: "/catalog/languages" },
-    { id: 24, title: "Красота", icon: Sparkles, colorClass: "bg-rose-500", href: "/catalog/beauty" },
-    { id: 25, title: "Саморазвитие", icon: TrendingUp, colorClass: "bg-indigo-500", href: "/catalog/self-development" },
+// ✅ Перевел цвета из классов Tailwind в HEX
+export const DEFAULT_BUBBLES: BubbleData[] = [
+    { id: 1, title: "Фотография", icon: "Camera", color: "#F97316", href: "/catalog/photo" }, // orange-500
+    { id: 2, title: "Правильное питание", icon: "Apple", color: "#16A34A", href: "/catalog/nutrition" }, // green-600
+    { id: 3, title: "Наука", icon: "BookOpen", color: "#14B8A6", href: "/catalog/science" }, // teal-500
+    { id: 4, title: "Подкасты", icon: "Mic", color: "#06B6D4", href: "/catalog/podcasts" }, // cyan-500
+    { id: 5, title: "Обзоры покупок", icon: "ShoppingBag", color: "#4F46E5", href: "/catalog/shopping" }, // indigo-600
+    { id: 6, title: "Криптовалюты", icon: "Bitcoin", color: "#10B981", href: "/catalog/crypto" }, // emerald-500
+    { id: 7, title: "Политика", icon: "Landmark", color: "#2563EB", href: "/catalog/politics" }, // blue-600
+    { id: 8, title: "Аналитика", icon: "BarChart3", color: "#C026D3", href: "/catalog/analytics" }, // fuchsia-600
+    { id: 9, title: "Мемы", icon: "Smile", color: "#E11D48", href: "/catalog/memes" }, // rose-600
+    { id: 10, title: "Программирование", icon: "Code", color: "#3B82F6", href: "/catalog/programming" }, // blue-500
+    { id: 11, title: "Стартапы", icon: "Rocket", color: "#EF4444", href: "/catalog/startups" }, // red-500
+    { id: 12, title: "Маркетинг", icon: "Megaphone", color: "#EA580C", href: "/catalog/marketing" }, // orange-600
+    { id: 13, title: "Акции и купоны", icon: "Tag", color: "#EAB308", href: "/catalog/sales" }, // yellow-500
+    { id: 14, title: "Уют и комфорт", icon: "Home", color: "#9333EA", href: "/catalog/home" }, // purple-600
+    { id: 15, title: "Здоровье", icon: "Heart", color: "#22C55E", href: "/catalog/health" }, // green-500
+    { id: 16, title: "Видеоигры", icon: "Gamepad2", color: "#DC2626", href: "/catalog/games" }, // red-600
+    { id: 17, title: "Путешествия", icon: "Plane", color: "#F97316", href: "/catalog/travel" }, // orange-500
+    { id: 18, title: "Образование", icon: "GraduationCap", color: "#3B82F6", href: "/catalog/education" }, // blue-500
+    { id: 19, title: "Нейросети", icon: "BrainCircuit", color: "#7C3AED", href: "/catalog/ai" }, // violet-600
+    { id: 20, title: "Лайфхаки", icon: "Lightbulb", color: "#0D9488", href: "/catalog/lifehacks" }, // teal-600
+    { id: 21, title: "Бизнес", icon: "Briefcase", color: "#B45309", href: "/catalog/business" }, // amber-700
+    { id: 22, title: "Искусство", icon: "Sparkles", color: "#FB923C", href: "/catalog/art" }, // orange-400
+    { id: 23, title: "Иностранные языки", icon: "Languages", color: "#FACC15", href: "/catalog/languages" }, // yellow-400
+    { id: 24, title: "Красота", icon: "Flower", color: "#F43F5E", href: "/catalog/beauty" }, // rose-500
+    { id: 25, title: "Саморазвитие", icon: "TrendingUp", color: "#6366F1", href: "/catalog/self-development" }, // indigo-500
 ];
 
-export const BubblesLayer = () => {
+interface BubblesLayerProps {
+    data?: BubbleData[];
+}
+
+export const BubblesLayer = ({
+    data = DEFAULT_BUBBLES
+}: BubblesLayerProps) => {
     const sceneRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const bubbleElements = useRef<Map<number, HTMLDivElement>>(new Map());
     const runnerRef = useRef<Matter.Runner | null>(null);
     const engineRef = useRef<Matter.Engine | null>(null);
-    
-    // Реф для хранения ширины экрана, чтобы избегать ререндера при изменении только высоты
     const lastWidthRef = useRef<number>(0);
 
-    // Глобальный слушатель отпускания мыши (восстановление скролла)
     useEffect(() => {
         const handlePointerUp = () => {
             if (sceneRef.current) {
@@ -107,15 +105,14 @@ export const BubblesLayer = () => {
             const width = document.documentElement.clientWidth;
             const height = window.innerHeight;
 
-            // Запоминаем текущую ширину
             lastWidthRef.current = width;
 
             const bubblesBodies: { bubbleId: number; body: Matter.Body; width: number; height: number }[] = [];
 
-            BUBBLES_DATA.forEach((bubble) => {
+            data.forEach((bubble) => {
                 const el = bubbleElements.current.get(bubble.id);
-                const elWidth = el?.offsetWidth || 100; 
-                const elHeight = el?.offsetHeight || 30; 
+                const elWidth = el?.offsetWidth || 150; 
+                const elHeight = el?.offsetHeight || 40; 
 
                 const x = width / 2 + (Math.random() - 0.5) * 300;
                 const y = -200 - Math.random() * 1200;
@@ -142,7 +139,6 @@ export const BubblesLayer = () => {
 
             const bodiesToAdd = [...bubblesBodies.map(b => b.body), ground, wallLeft, wallRight];
 
-            // --- КОЛЛАЙДЕР ТЕЛЕФОНА ---
             if (width > 500) {
                 const phoneW = 445; 
                 const phoneH = 350;
@@ -165,7 +161,6 @@ export const BubblesLayer = () => {
             Composite.add(engine.world, bodiesToAdd);
 
             const mouse = Mouse.create(sceneRef.current);
-            
             // @ts-ignore
             mouse.element.removeEventListener("mousewheel", mouse.mousewheel);
             // @ts-ignore
@@ -200,7 +195,7 @@ export const BubblesLayer = () => {
                         const label = draggedBody.label;
                         if (label?.startsWith("bubble-")) {
                             const id = parseInt(label.replace("bubble-", ""));
-                            const bubble = BUBBLES_DATA.find(b => b.id === id);
+                            const bubble = data.find(b => b.id === id);
                             if (bubble) router.push(bubble.href);
                         }
                     }
@@ -234,13 +229,7 @@ export const BubblesLayer = () => {
 
         const handleResize = () => {
             const currentWidth = document.documentElement.clientWidth;
-            
-            // Если ширина изменилась незначительно (менее 50px) или вообще не изменилась 
-            // (например, сработал ресайз только по высоте из-за адресной строки), то игнорируем
-            if (Math.abs(currentWidth - lastWidthRef.current) < 50) {
-                return;
-            }
-
+            if (Math.abs(currentWidth - lastWidthRef.current) < 50) return;
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(initPhysics, 300);
         };
@@ -252,11 +241,11 @@ export const BubblesLayer = () => {
             window.removeEventListener("resize", handleResize);
             clearWorld();
         };
-    }, [router]);
+    }, [router, data]);
 
     return (
         <div ref={sceneRef} className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-            {BUBBLES_DATA.map((bubble) => (
+            {data.map((bubble) => (
                 <div
                     key={bubble.id}
                     ref={(el) => {
@@ -273,15 +262,19 @@ export const BubblesLayer = () => {
                         "absolute top-0 left-0 pointer-events-auto touch-none", 
                         "flex items-center rounded-full text-white font-semibold select-none whitespace-nowrap will-change-transform cursor-grab active:cursor-grabbing shadow-lg",
                         "px-3 py-2 gap-1.5", 
-                        "min-[1025px]:px-6 min-[1025px]:py-3.5 min-[1025px]:gap-3", 
-                        bubble.colorClass
+                        "min-[1025px]:px-6 min-[1025px]:py-3.5 min-[1025px]:gap-3"
                     )}
                     style={{
                         transform: 'translate3d(-9999px, -9999px, 0)',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.1)'
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.1)',
+                        backgroundColor: bubble.color // ✅ Применяем цвет здесь инлайном
                     }}
                 >
-                    <bubble.icon className="w-3.5 h-3.5 min-[1025px]:w-6 min-[1025px]:h-6" strokeWidth={2.5} />
+                    <DynamicIcon 
+                        name={bubble.icon} 
+                        className="w-3.5 h-3.5 min-[1025px]:w-6 min-[1025px]:h-6" 
+                        strokeWidth={2.5} 
+                    />
                     <span className="text-[10px] min-[1025px]:text-[17px]">{bubble.title}</span>
                 </div>
             ))}

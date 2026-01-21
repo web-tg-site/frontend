@@ -1,8 +1,10 @@
-import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link'; // 1. Импортируем Link
+'use client'
 
-interface ChannelData {
+import Image from 'next/image';
+import Link from 'next/link';
+import { useGetChannelForGeography } from '../api/use-get-channel-for-geography';
+
+export interface ChannelData {
     id: number;
     name: string;
     region: string;
@@ -10,46 +12,24 @@ interface ChannelData {
     label: string;
     price: string;
     iconUrl: string;
+    slug: string;
     coords: {
         top: number;
         left: number;
     };
 }
 
-const CHANNELS: ChannelData[] = [
-    {
-        id: 1,
-        name: "Новости Москвы",
-        region: "Москва",
-        subscribers: "150к",
-        label: "Подписчиков",
-        price: "15 000 ₽",
-        iconUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&h=300",
-        coords: { top: 38, left: 18 },
-    },
-    {
-        id: 2,
-        name: "Питер Live",
-        region: "Санкт-Петербург",
-        subscribers: "95к",
-        label: "Подписчиков",
-        price: "10 000 ₽",
-        iconUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&h=300",
-        coords: { top: 32, left: 12 },
-    },
-    {
-        id: 3,
-        name: "Екатеринбург ЧП",
-        region: "Екатеринбург",
-        subscribers: "45к",
-        label: "Подписчиков",
-        price: "5 500 ₽",
-        iconUrl: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=300&h=300",
-        coords: { top: 55, left: 35 },
-    },
-];
-
 export const Map = () => {
+    const { data: channels, isLoading } = useGetChannelForGeography();
+
+    if(isLoading) {
+        return null;
+    }
+
+    if(!channels) {
+        return null;
+    }
+
     return (
         <div className="w-full relative">
             <Image
@@ -62,7 +42,7 @@ export const Map = () => {
                 priority
             />
 
-            {CHANNELS.map((channel) => (
+            {channels.map((channel) => (
                 <MapPin key={channel.id} data={channel} />
             ))}
         </div>
@@ -82,7 +62,7 @@ const MapPin = ({ data }: { data: ChannelData }) => {
                 2. Заменили div на Link и добавили href
             */}
             <Link
-                href={`/channel/${data.id}`}
+                href={`/channel/${data.slug}`}
                 className="absolute bottom-0 right-0 w-32 h-32 sm:w-48 sm:h-48 origin-bottom-right transform rotate-45 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] scale-[0.27] hover:scale-100 cursor-pointer group drop-shadow-md hover:drop-shadow-2xl will-change-transform"
             >
                 

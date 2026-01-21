@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useForm, Controller, useFieldArray, SubmitHandler } from "react-hook-form"
 import axios, { isAxiosError } from "axios"
 import { Trash } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 
 // UI Components
 import { AdminPageTitle } from "@/shared/ui/admin/ui/admin-page-title"
@@ -20,11 +21,11 @@ import { AdminCheckbox } from "@/shared/ui/admin/ui/form/admin-checkbox"
 import { ChannelFormProps } from "../types/channel-form.props"
 import { useAdminCategories } from "@/page/admin-channels/api/use-admin-category"
 import { FORMAT_OPTIONS } from "../config/format-options"
+
 // API
 import { createChannel } from "../api/create-channel"
-import { updateChannel } from "../api/update-channel" // 👈 Импортируем функцию обновления
+import { updateChannel } from "../api/update-channel"
 import { getChannel } from "../api/get-channel"
-import { useQueryClient } from "@tanstack/react-query"
 
 interface CreateChannelForm {
     name: string;
@@ -67,15 +68,14 @@ export const ChannelForm = ({
     id
 }: ChannelFormProps) => {
     const queryClient = useQueryClient();
-
     const router = useRouter();
+    
+    // 1. Получаем данные категорий
     const { data: categoryData, isLoading: categoryLoading } = useAdminCategories();
-    const categories = !categoryData ? [] : categoryData;
-
+    const categoryOptions = categoryData || []; 
+    
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(type === 'edit');
-    
-    // Стейт для хранения старой ссылки
     const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
 
     const { control, handleSubmit, getValues, trigger, setError, clearErrors, reset, formState: { errors } } = useForm<CreateChannelForm>({
@@ -127,7 +127,7 @@ export const ChannelForm = ({
 
                     reset({
                         name: data.name,
-                        categoryId: data.categoryId,
+                        categoryId: data.categoryId, // ID категории
                         image: data.image,
                         description: data.description,
                         subscribers: String(data.subscribers),
@@ -181,23 +181,15 @@ export const ChannelForm = ({
         const likes = Number(getValues('lectureHall.statsData.likes') || 0);
         const comments = Number(getValues('lectureHall.statsData.comments') || 0);
         const reposts = Number(getValues('lectureHall.statsData.reposts') || 0);
-        
         const total = likes + comments + reposts;
-        
-        if (total !== 100) {
-            return `Сумма ${total}% (нужно 100%)`;
-        }
+        if (total !== 100) return `Сумма ${total}% (нужно 100%)`;
         return true;
     };
 
     const handleStatsChange = (val: string, onChange: (val: string) => void) => {
         handleNumberInput(val, async (newValue) => {
             onChange(newValue);
-            await trigger([
-                'lectureHall.statsData.likes',
-                'lectureHall.statsData.comments',
-                'lectureHall.statsData.reposts'
-            ]);
+            await trigger(['lectureHall.statsData.likes', 'lectureHall.statsData.comments', 'lectureHall.statsData.reposts']);
         });
     }
 
@@ -206,36 +198,26 @@ export const ChannelForm = ({
         try {
             setIsLoading(true);
             clearErrors("root");
-
             let imageUrl = "";
 
             // 1. Работа с изображением
             if (data.image && data.image instanceof File) {
-                // Новый файл
                 const formData = new FormData();
                 formData.append("file", data.image);
-
                 try {
                     const { data: uploadData } = await axios.post('/api/upload-images/avatar-telegram', formData, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                     });
                     imageUrl = uploadData.url;
-
-                    // Если редактирование и была старая картинка -> удаляем старую
                     if (type === 'edit' && initialImageUrl) {
-                        axios.post('/api/delete-image', { url: initialImageUrl })
-                            .catch(err => console.error("Не удалось удалить старую картинку:", err));
+                        axios.post('/api/delete-image', { url: initialImageUrl }).catch(console.error);
                     }
                 } catch (error) {
-                    setError("image", { 
-                        type: "manual", 
-                        message: "Не удалось загрузить изображение" 
-                    });
+                    setError("image", { type: "manual", message: "Не удалось загрузить изображение" });
                     setIsLoading(false);
                     return;
                 }
             } else if (typeof data.image === 'string') {
-                // Старый URL
                 imageUrl = data.image;
             }
 
@@ -260,41 +242,26 @@ export const ChannelForm = ({
                 }
             };
 
-            // 3. Отправка (Create или Update)
+            // 3. API запрос
             if (type === 'create') {
                 await createChannel(payload);
             } else {
-                if (id) {
-                    await updateChannel(Number(id), payload);
-                } else {
-                    throw new Error("ID канала не найден");
-                }
+                if (id) await updateChannel(Number(id), payload);
+                else throw new Error("ID канала не найден");
             }
 
-            queryClient.invalidateQueries({ queryKey: ['Admin Channel'] })
-            // 4. Редирект
+            queryClient.invalidateQueries({ queryKey: ['Admin Channel'] });
             router.push('/admin/channels');
 
         } catch (error) {
             console.error(error);
-
             if (isAxiosError(error) && error.response) {
-                const responseData = error.response.data;
-                const serverMessage = responseData.message;
-
-                const errorMessage = Array.isArray(serverMessage) 
-                    ? serverMessage.join(', ') 
-                    : serverMessage || "Произошла ошибка при сохранении";
-
-                setError("root", {
-                    type: "server",
-                    message: errorMessage
-                });
+                const errorMessage = Array.isArray(error.response.data.message) 
+                    ? error.response.data.message.join(', ') 
+                    : error.response.data.message || "Ошибка сохранения";
+                setError("root", { type: "server", message: errorMessage });
             } else {
-                setError("root", {
-                    type: "server",
-                    message: "Произошла неизвестная ошибка"
-                });
+                setError("root", { type: "server", message: "Произошла неизвестная ошибка" });
             }
         } finally {
             setIsLoading(false);
@@ -317,24 +284,11 @@ export const ChannelForm = ({
                                 {errors.root.message}
                             </div>
                         )}
-
                         <div className="flex items-center gap-2">
-                            <AdminButton 
-                                variant="secondary" 
-                                className="min-w-[150px] rounded-full" 
-                                type="button"
-                                disabled={isLoading}
-                                onClick={() => router.back()}
-                            >
+                            <AdminButton variant="secondary" className="min-w-[150px] rounded-full" type="button" disabled={isLoading} onClick={() => router.back()}>
                                 Отмена
                             </AdminButton>
-
-                            <AdminButton 
-                                className="min-w-[150px] rounded-full" 
-                                type="submit"
-                                loading={isLoading}
-                                disabled={isLoading}
-                            >
+                            <AdminButton className="min-w-[150px] rounded-full" type="submit" loading={isLoading} disabled={isLoading}>
                                 {type === 'create' ? "Создать" : "Сохранить"}
                             </AdminButton>
                         </div>
@@ -353,6 +307,7 @@ export const ChannelForm = ({
                                 )}
                             />
 
+                            {/* ✅ ИСПРАВЛЕНО: СЕЛЕКТ С ПОИСКОМ */}
                             <Controller
                                 control={control}
                                 name="categoryId"
@@ -360,10 +315,12 @@ export const ChannelForm = ({
                                 render={({ field }) => (
                                     <AdminSelect 
                                         placeholder="Выбрать категорию" 
-                                        options={categories} 
+                                        options={categoryOptions} // Передаем обработанные опции
                                         value={field.value} 
                                         onChange={field.onChange}
                                         error={errors.categoryId?.message}
+                                        isLoading={categoryLoading}
+                                        isSearchable={true} // Включаем поиск
                                     />
                                 )}
                             />
@@ -397,7 +354,7 @@ export const ChannelForm = ({
                                 name="coast"
                                 rules={{ required: "Укажите стоимость" }}
                                 render={({ field }) => (
-                                    <AdminInput {...field} placeholder="Стоимость" error={errors.coast?.message} />
+                                    <AdminInput {...field} placeholder="Стоимость" error={errors.coast?.message} onChange={(e) => handleNumberInput(e.target.value, field.onChange)} />
                                 )}
                             />
 
@@ -423,65 +380,33 @@ export const ChannelForm = ({
                                 <Controller
                                     control={control}
                                     name="lectureHall.statsData.likes"
-                                    rules={{ 
-                                        required: "Укажите значение",
-                                        validate: validateStatsSum
-                                    }}
+                                    rules={{ required: "Укажите значение", validate: validateStatsSum }}
                                     render={({ field }) => (
-                                        <AdminInput 
-                                            placeholder="Лайкают (число в %)" 
-                                            value={field.value}
-                                            onChange={(e) => handleStatsChange(e.target.value, field.onChange)}
-                                            error={errors.lectureHall?.statsData?.likes?.message}
-                                        />
+                                        <AdminInput placeholder="Лайкают (число в %)" value={field.value} onChange={(e) => handleStatsChange(e.target.value, field.onChange)} error={errors.lectureHall?.statsData?.likes?.message} />
                                     )}
                                 />
                                 <Controller
                                     control={control}
                                     name="lectureHall.statsData.comments"
-                                    rules={{ 
-                                        required: "Укажите значение",
-                                        validate: validateStatsSum
-                                    }}
+                                    rules={{ required: "Укажите значение", validate: validateStatsSum }}
                                     render={({ field }) => (
-                                        <AdminInput 
-                                            placeholder="Комментируют (число в %)" 
-                                            value={field.value}
-                                            onChange={(e) => handleStatsChange(e.target.value, field.onChange)}
-                                            error={errors.lectureHall?.statsData?.comments?.message}
-                                        />
+                                        <AdminInput placeholder="Комментируют (число в %)" value={field.value} onChange={(e) => handleStatsChange(e.target.value, field.onChange)} error={errors.lectureHall?.statsData?.comments?.message} />
                                     )}
                                 />
                                 <Controller
                                     control={control}
                                     name="lectureHall.statsData.reposts"
-                                    rules={{ 
-                                        required: "Укажите значение",
-                                        validate: validateStatsSum
-                                    }}
+                                    rules={{ required: "Укажите значение", validate: validateStatsSum }}
                                     render={({ field }) => (
-                                        <AdminInput 
-                                            placeholder="Делают репосты (число в %)" 
-                                            value={field.value}
-                                            onChange={(e) => handleStatsChange(e.target.value, field.onChange)}
-                                            error={errors.lectureHall?.statsData?.reposts?.message}
-                                        />
+                                        <AdminInput placeholder="Делают репосты (число в %)" value={field.value} onChange={(e) => handleStatsChange(e.target.value, field.onChange)} error={errors.lectureHall?.statsData?.reposts?.message} />
                                     )}
                                 />
                                 <Controller
                                     control={control}
                                     name="lectureHall.activePercentage"
-                                    rules={{ 
-                                        required: "Укажите значение",
-                                        validate: (val) => Number(val) <= 100 || "Максимум 100%"
-                                    }}
+                                    rules={{ required: "Укажите значение", validate: (val) => Number(val) <= 100 || "Максимум 100%" }}
                                     render={({ field }) => (
-                                        <AdminInput 
-                                            placeholder="Активность (число в %)" 
-                                            value={field.value}
-                                            onChange={(e) => handleNumberInput(e.target.value, field.onChange)}
-                                            error={errors.lectureHall?.activePercentage?.message}
-                                        />
+                                        <AdminInput placeholder="Активность (число в %)" value={field.value} onChange={(e) => handleNumberInput(e.target.value, field.onChange)} error={errors.lectureHall?.activePercentage?.message} />
                                     )}
                                 />
                             </div>
@@ -499,122 +424,46 @@ export const ChannelForm = ({
                                                 placeholder="Введите текст"
                                                 value={inputField.value}
                                                 onChange={inputField.onChange}
-                                                icon={
-                                                    (interestFields.length > 1 || inputField.value) ? (
-                                                        <Trash size={18} className="hover:text-red-400 transition-colors" />
-                                                    ) : undefined
-                                                }
+                                                icon={(interestFields.length > 1 || inputField.value) ? <Trash size={18} className="hover:text-red-400 transition-colors" /> : undefined}
                                                 onIconClick={() => removeInterest(index)}
                                             />
                                         )}
                                     />
                                 ))}
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => appendInterest({ value: '' })}
-                                className="underline underline-offset-2 text-[12px] text-white/80 transition hover:text-white cursor-pointer"
-                            >
-                                Добавить поле
-                            </button>
+                            <button type="button" onClick={() => appendInterest({ value: '' })} className="underline underline-offset-2 text-[12px] text-white/80 transition hover:text-white cursor-pointer">Добавить поле</button>
                         </AdminFormGroup>
 
                         <div className="grid grid-cols-3 gap-2.5">
                             <AdminFormGroup title="Формат потребления">
-                                <Controller
-                                    control={control}
-                                    name="lectureHall.consumption"
-                                    rules={{ required: "Поле не заполнено" }}
-                                    render={({ field }) => (
-                                        <AdminInput {...field} placeholder="Введите текст" error={errors.lectureHall?.consumption?.message} />
-                                    )}
-                                />
+                                <Controller control={control} name="lectureHall.consumption" rules={{ required: "Поле не заполнено" }} render={({ field }) => <AdminInput {...field} placeholder="Введите текст" error={errors.lectureHall?.consumption?.message} />} />
                             </AdminFormGroup>
-
                             <AdminFormGroup title="Как читают канал">
-                                <Controller
-                                    control={control}
-                                    name="lectureHall.howRead"
-                                    rules={{ required: "Поле не заполнено" }}
-                                    render={({ field }) => (
-                                        <AdminInput {...field} placeholder="Введите текст" error={errors.lectureHall?.howRead?.message} />
-                                    )}
-                                />
+                                <Controller control={control} name="lectureHall.howRead" rules={{ required: "Поле не заполнено" }} render={({ field }) => <AdminInput {...field} placeholder="Введите текст" error={errors.lectureHall?.howRead?.message} />} />
                             </AdminFormGroup>
-
                             <AdminFormGroup title="Реакция на рекламу">
-                                <Controller
-                                    control={control}
-                                    name="lectureHall.reaction"
-                                    rules={{ required: "Поле не заполнено" }}
-                                    render={({ field }) => (
-                                        <AdminInput {...field} placeholder="Введите текст" error={errors.lectureHall?.reaction?.message} />
-                                    )}
-                                />
+                                <Controller control={control} name="lectureHall.reaction" rules={{ required: "Поле не заполнено" }} render={({ field }) => <AdminInput {...field} placeholder="Введите текст" error={errors.lectureHall?.reaction?.message} />} />
                             </AdminFormGroup>
                         </div>
 
                         <div className="grid grid-cols-3 gap-2.5">
                             <AdminFormGroup title="Частота пробления">
-                                <Controller
-                                    control={control}
-                                    name="lectureHall.frequency"
-                                    rules={{ required: "Поле не заполнено" }}
-                                    render={({ field }) => (
-                                        <AdminInput {...field} placeholder="Введите текст" error={errors.lectureHall?.frequency?.message} />
-                                    )}
-                                />
+                                <Controller control={control} name="lectureHall.frequency" rules={{ required: "Поле не заполнено" }} render={({ field }) => <AdminInput {...field} placeholder="Введите текст" error={errors.lectureHall?.frequency?.message} />} />
                             </AdminFormGroup>
-
                             <AdminFormGroup title="География" className="col-span-2">
                                 <div className="grid grid-cols-2 gap-2.5 mb-3">
                                     {geoFields.map((field, index) => (
                                         <div key={field.id} className="flex gap-2 relative">
                                             <div className="w-[60%]">
-                                                <Controller
-                                                    control={control}
-                                                    name={`lectureHall.geographyItems.${index}.name`}
-                                                    rules={{ required: "Укажите страну" }}
-                                                    render={({ field: inputField, fieldState }) => (
-                                                        <AdminInput
-                                                            placeholder="Страна"
-                                                            value={inputField.value}
-                                                            onChange={inputField.onChange}
-                                                            error={fieldState.error?.message}
-                                                        />
-                                                    )}
-                                                />
+                                                <Controller control={control} name={`lectureHall.geographyItems.${index}.name`} rules={{ required: "Укажите страну" }} render={({ field: inputField, fieldState }) => <AdminInput placeholder="Страна" value={inputField.value} onChange={inputField.onChange} error={fieldState.error?.message} />} />
                                             </div>
                                             <div className="w-[40%]">
-                                                <Controller
-                                                    control={control}
-                                                    name={`lectureHall.geographyItems.${index}.percent`}
-                                                    rules={{ 
-                                                        required: "Укажите %",
-                                                        validate: (val) => Number(val) <= 100 || "Макс 100%"
-                                                    }}
-                                                    render={({ field: inputField, fieldState }) => (
-                                                        <AdminInput
-                                                            placeholder="%"
-                                                            value={inputField.value}
-                                                            onChange={(e) => handleNumberInput(e.target.value, inputField.onChange)}
-                                                            error={fieldState.error?.message}
-                                                            icon={<Trash size={18} className="hover:text-red-400 transition-colors" />}
-                                                            onIconClick={() => removeGeo(index)}
-                                                        />
-                                                    )}
-                                                />
+                                                <Controller control={control} name={`lectureHall.geographyItems.${index}.percent`} rules={{ required: "Укажите %", validate: (val) => Number(val) <= 100 || "Макс 100%" }} render={({ field: inputField, fieldState }) => <AdminInput placeholder="%" value={inputField.value} onChange={(e) => handleNumberInput(e.target.value, inputField.onChange)} error={fieldState.error?.message} icon={<Trash size={18} className="hover:text-red-400 transition-colors" />} onIconClick={() => removeGeo(index)} />} />
                                             </div>
                                         </div>
                                     ))}
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={() => appendGeo({ name: '', percent: '' })}
-                                    className="underline underline-offset-2 text-[12px] text-white/80 transition hover:text-white cursor-pointer"
-                                >
-                                    Добавить поле
-                                </button>
+                                <button type="button" onClick={() => appendGeo({ name: '', percent: '' })} className="underline underline-offset-2 text-[12px] text-white/80 transition hover:text-white cursor-pointer">Добавить поле</button>
                             </AdminFormGroup>
                         </div>
                     </AdminFormCard>
@@ -632,9 +481,7 @@ export const ChannelForm = ({
                                                 label={format}
                                                 checked={field.value.includes(format)}
                                                 onChange={() => {
-                                                    const newValue = field.value.includes(format)
-                                                        ? field.value.filter(f => f !== format)
-                                                        : [...field.value, format];
+                                                    const newValue = field.value.includes(format) ? field.value.filter(f => f !== format) : [...field.value, format];
                                                     field.onChange(newValue);
                                                 }}
                                             />
@@ -646,43 +493,9 @@ export const ChannelForm = ({
 
                         <AdminFormGroup title="Статистика">
                             <div className="grid grid-cols-3 gap-2.5">
-                                <Controller
-                                    control={control}
-                                    name="content.stats.overallCoverage"
-                                    rules={{ required: "Поле не заполнено" }}
-                                    render={({ field }) => (
-                                        <AdminInput 
-                                            {...field} 
-                                            placeholder="Средний охват постов (просмотры)" 
-                                            error={errors.content?.stats?.overallCoverage?.message}
-                                        />
-                                    )}
-                                />
-                                <Controller
-                                    control={control}
-                                    name="content.stats.monthlyCoverage"
-                                    rules={{ required: "Поле не заполнено" }}
-                                    render={({ field }) => (
-                                        <AdminInput 
-                                            {...field} 
-                                            placeholder="Средний охват в месяц (просмотры)" 
-                                            error={errors.content?.stats?.monthlyCoverage?.message}
-                                        />
-                                    )}
-                                />
-                                <Controller
-                                    control={control}
-                                    name="content.stats.er"
-                                    rules={{ required: "Поле не заполнено" }}
-                                    render={({ field }) => (
-                                        <AdminInput 
-                                            {...field} 
-                                            placeholder="ER (число в %)" 
-                                            error={errors.content?.stats?.er?.message}
-                                            onChange={(e) => handleNumberInput(e.target.value, field.onChange)}
-                                        />
-                                    )}
-                                />
+                                <Controller control={control} name="content.stats.overallCoverage" rules={{ required: "Поле не заполнено" }} render={({ field }) => <AdminInput {...field} placeholder="Средний охват постов (просмотры)" error={errors.content?.stats?.overallCoverage?.message} />} />
+                                <Controller control={control} name="content.stats.monthlyCoverage" rules={{ required: "Поле не заполнено" }} render={({ field }) => <AdminInput {...field} placeholder="Средний охват в месяц (просмотры)" error={errors.content?.stats?.monthlyCoverage?.message} />} />
+                                <Controller control={control} name="content.stats.er" rules={{ required: "Поле не заполнено" }} render={({ field }) => <AdminInput {...field} placeholder="ER (число в %)" error={errors.content?.stats?.er?.message} onChange={(e) => handleNumberInput(e.target.value, field.onChange)} />} />
                             </div>
                         </AdminFormGroup>
                     </AdminFormCard>
@@ -690,30 +503,9 @@ export const ChannelForm = ({
                     <AdminFormCard title="Стоимость рекламы">
                         <AdminFormGroup title="Средняя цена">
                             <div className="grid grid-cols-3 gap-2.5">
-                                <Controller
-                                    control={control}
-                                    name="priceAdd.advertisement"
-                                    rules={{ required: "Укажите цену" }}
-                                    render={({ field }) => (
-                                        <AdminInput {...field} placeholder="Рекламный пост" error={errors.priceAdd?.advertisement?.message} />
-                                    )}
-                                />
-                                <Controller
-                                    control={control}
-                                    name="priceAdd.integration"
-                                    rules={{ required: "Укажите цену" }}
-                                    render={({ field }) => (
-                                        <AdminInput {...field} placeholder="Интеграция" error={errors.priceAdd?.integration?.message} />
-                                    )}
-                                />
-                                <Controller
-                                    control={control}
-                                    name="priceAdd.repost"
-                                    rules={{ required: "Укажите цену" }}
-                                    render={({ field }) => (
-                                        <AdminInput {...field} placeholder="Репост" error={errors.priceAdd?.repost?.message} />
-                                    )}
-                                />
+                                <Controller control={control} name="priceAdd.advertisement" rules={{ required: "Укажите цену" }} render={({ field }) => <AdminInput {...field} placeholder="Рекламный пост" error={errors.priceAdd?.advertisement?.message} />} />
+                                <Controller control={control} name="priceAdd.integration" rules={{ required: "Укажите цену" }} render={({ field }) => <AdminInput {...field} placeholder="Интеграция" error={errors.priceAdd?.integration?.message} />} />
+                                <Controller control={control} name="priceAdd.repost" rules={{ required: "Укажите цену" }} render={({ field }) => <AdminInput {...field} placeholder="Репост" error={errors.priceAdd?.repost?.message} />} />
                             </div>
                         </AdminFormGroup>
                     </AdminFormCard>
