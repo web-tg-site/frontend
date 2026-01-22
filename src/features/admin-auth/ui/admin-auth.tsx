@@ -35,30 +35,30 @@ const AdminAuthContent = () => {
 
         try {
             // Проверка reCAPTCHA
-            // console.log("2. Проверяем reCAPTCHA")
-            // if (!executeRecaptcha) {
-            //     throw new Error("Защита не готова. Обновите страницу.")
-            // }
+            console.log("2. Проверяем reCAPTCHA")
+            if (!executeRecaptcha) {
+                throw new Error("Защита не готова. Обновите страницу.")
+            }
 
-            // const recaptchaToken = await executeRecaptcha("admin_login")
-            // console.log("3. Получен токен reCAPTCHA:", !!recaptchaToken)
+            const recaptchaToken = await executeRecaptcha("admin_login")
+            console.log("3. Получен токен reCAPTCHA:", !!recaptchaToken)
 
-            // if (!recaptchaToken) {
-            //     throw new Error("Не удалось получить токен защиты")
-            // }
+            if (!recaptchaToken) {
+                throw new Error("Не удалось получить токен защиты")
+            }
 
-            // // Проверка капчи на сервере
-            // console.log("4. Проверяем капчу на сервере")
-            // const checkResponse = await fetch('/api/check-captcha', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ token: recaptchaToken })
-            // })
+            // Проверка капчи на сервере
+            console.log("4. Проверяем капчу на сервере")
+            const checkResponse = await fetch('/api/check-captcha', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: recaptchaToken })
+            })
 
-            // if (!checkResponse.ok) {
-            //     throw new Error("Проверка безопасности не пройдена")
-            // }
-            // console.log("5. Капча прошла проверку")
+            if (!checkResponse.ok) {
+                throw new Error("Проверка безопасности не пройдена")
+            }
+            console.log("5. Капча прошла проверку")
 
             // Отправка данных авторизации
             console.log("6. Отправляем данные авторизации")

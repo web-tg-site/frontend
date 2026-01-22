@@ -48,18 +48,18 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
                 return
             }
 
-            // const token = await executeRecaptcha("submit_application")
+            const token = await executeRecaptcha("submit_application")
 
-            // const checkResponse = await fetch('/api/check-captcha', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ token })
-            // })
+            const checkResponse = await fetch('/api/check-captcha', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            })
 
-            // if (!checkResponse.ok) {
-            //     setError("root", { message: "Не удалось пройти проверку безопасности" })
-            //     throw new Error("Captcha validation failed")
-            // }
+            if (!checkResponse.ok) {
+                setError("root", { message: "Не удалось пройти проверку безопасности" })
+                throw new Error("Captcha validation failed")
+            }
 
             await SendApplication({
                 ...data,
