@@ -17,12 +17,12 @@ export const viewport: Viewport = {
   themeColor: "#1A1A1A",
 };
 
-const DOMAIN = "https://sway.pro"; 
+const DOMAIN = "https://swaymedia.ru"; 
 
 export const metadata: Metadata = {
   metadataBase: new URL(DOMAIN),
   title: "Sway",
-  description: "Сервис по продаже рекламы в Telegram каналах. Удобный поиск, возможность создавать свои подборки каналов и заказ персональной подборки под задачи вашего бизнеса.",
+  description: "Сервис по продаже рекламы в Telegram каналах. Возможность создавать свои подборки каналов и заказ персональной подборки под задачи вашего бизнеса.",
   keywords: [
     "реклама в телеграм",
     "биржа телеграм каналов",
