@@ -16,7 +16,7 @@ export async function setAuthCookie(token: string) {
     
     cookieStore.set('accessToken', token, {
         httpOnly: true,
-        secure: false,
+        secure: isProduction,
         path: '/',
         maxAge: 60 * 60 * 24 * 7,
         sameSite: 'lax'
