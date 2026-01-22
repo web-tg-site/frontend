@@ -9,14 +9,16 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-deploy:
+  # --- ЭТАП 1: СБОРКА И ПУШ ---
+  build:
+    name: Build
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Log in to Registry
@@ -26,18 +28,25 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Frontend
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          # "Впекаем" публичные переменные
+          # Впекаем переменные при билде
           build-args: |
             NEXT_PUBLIC_API_HOST=${{ secrets.NEXT_PUBLIC_API_HOST }}
             NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_SITE_KEY }}
 
-      - name: Deploy to Server
+  # --- ЭТАП 2: ДЕПЛОЙ ---
+  deploy:
+    name: Deploy to VPS
+    needs: build # Ждем сборку
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH Remote Commands
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -46,20 +55,18 @@ jobs:
           script: |
             cd /opt/app
 
-            # 1. Обновляем .env.client (если нужно менять рантайм переменные)
+            # Обновляем runtime переменные клиента
             cat <<EOF > .env.client
             NODE_ENV=production
-            PORT=3000
-            # Секретные ключи, которые нужны только на сервере (не в браузере)
+            NEXT_PUBLIC_API_HOST=${{ secrets.NEXT_PUBLIC_API_HOST }}
             RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }}
             EOF
-
-            # 2. Логинимся
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
-            # 3. Обновляем ТОЛЬКО клиента
+            # Логинимся и обновляем
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose pull client
-            # --no-deps чтобы не перезагружать базу и бэк лишний раз
+            
+            # --no-deps: не трогаем бэкенд и базу, обновляем только фронт
             docker compose up -d --no-deps client
             
             docker image prune -f
