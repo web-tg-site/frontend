@@ -37,7 +37,7 @@ export async function proxy(request: NextRequest) {
         try {
             const apiHost = process.env.NEXT_PUBLIC_API_HOST || 'http://localhost:3000'
             const cleanHost = apiHost.replace(/\/$/, '') 
-            const url = `${cleanHost}/api/admin/profile`
+            const url = `${cleanHost}/admin/profile`
             
             const response = await fetch(url, {
                 method: 'GET',
