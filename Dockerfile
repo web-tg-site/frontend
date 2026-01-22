@@ -1,55 +1,41 @@
-# Используем node:20-slim (Debian)
-FROM node:20-slim AS deps
+#Зависимости
+FROM oven/bun:1 as deps
 WORKDIR /app
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
-RUN apt-get update -y && apt-get install -y openssl
-
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
-
-# Сборка
-FROM node:20-slim AS builder
+#Сборка
+FROM oven/bun:1 as builder
 WORKDIR /app
-
-RUN apt-get update -y && apt-get install -y openssl
-
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Заглушка URL для генерации
-ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/mydb"
-RUN npx prisma generate
+ARG NEXT_PUBLIC_API_HOST
+ARG NEXT_PUBLIC_RECAPTCHA_SITE_KEY
 
-RUN yarn build
+ENV NEXT_PUBLIC_API_HOST=#NEXT_PUBLIC_API_HOST
+ENV NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST}
+ENV NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
 
-RUN yarn install --production --frozen-lockfile && yarn cache clean
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Запуск
-FROM node:20-slim AS runner
+RUN bun run build
+
+#Запуск
+FROM oven/bun:1 as runner
 WORKDIR /app
 
-ENV NODE_ENV=production
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN apt-get update -y && apt-get install -y openssl
+#Копируем public
+COPY --from=builder /app/public ./public
 
-USER node
+#Копируем сборку
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-COPY --chown=node:node package.json ./
+RUN mkdir -p public/uploads
 
-COPY --chown=node:node --from=builder /app/node_modules ./node_modules
-COPY --chown=node:node --from=builder /app/dist ./dist
-COPY --chown=node:node --from=builder /app/prisma ./prisma
-
-# --- ВАЖНО: КОПИРУЕМ КОНФИГ ПРИЗМЫ ---
-COPY --chown=node:node --from=builder /app/prisma.config.ts ./
-# -------------------------------------
-
-USER root
-# Устанавливаем tsx глобально, чтобы читать prisma.config.ts
-RUN npm install -g tsx prisma
-USER node
-
-EXPOSE 4000
-
-# Запускаем
-CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node dist/src/main"]
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
