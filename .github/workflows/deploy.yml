@@ -68,5 +68,8 @@ jobs:
             
             # --no-deps: не трогаем бэкенд и базу, обновляем только фронт
             docker compose up -d --no-deps client
+
+            #перезапуск клиента
+            docker compose restart nginx
             
             docker image prune -f
