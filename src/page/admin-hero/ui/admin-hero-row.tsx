@@ -1,6 +1,8 @@
-import { Edit, Trash, Pin, BadgeCheck } from "lucide-react";
+import { Edit, Trash, Pin, BadgeCheck, Menu } from "lucide-react";
 import { cn } from "@/shared/utils";
 import { AdminHeroRowProps } from "../types/admin-hero";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export const AdminHeroRow = ({
     id,
@@ -14,7 +16,25 @@ export const AdminHeroRow = ({
     onEdit
 }: AdminHeroRowProps) => {
 
-    const gridClassName = "grid grid-cols-[0.5fr_1fr_3fr_1fr_1fr_0.5fr] gap-4 items-center";
+    // --- DND HOOK ---
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 10 : 1, // Перетаскиваемый элемент всегда сверху
+        position: 'relative' as const,
+    };
+
+    // Добавили 'auto' в начало сетки для иконки драга
+    const gridClassName = "grid grid-cols-[auto_0.5fr_1fr_3fr_1fr_1fr_0.5fr] gap-4 items-center";
 
     const renderHighlightedText = (text: string, highlight: string) => {
         if (!highlight.trim()) return <span className="text-white">{text}</span>;
@@ -30,10 +50,25 @@ export const AdminHeroRow = ({
     };
 
     return (
-        <div className={cn(
-            gridClassName, 
-            "bg-card hover:bg-[#2b2b2b] transition-colors rounded-xl px-5 py-4 text-white text-[14px]"
-        )}>
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={cn(
+                gridClassName, 
+                "bg-card transition-colors rounded-xl px-5 py-4 text-white text-[14px]",
+                // Меняем стиль при перетаскивании
+                isDragging ? "opacity-50 bg-[#2b2b2b]" : "hover:bg-[#2b2b2b]"
+            )}
+        >
+            {/* --- DRAG HANDLE (БУРГЕР) --- */}
+            <div 
+                {...attributes} 
+                {...listeners} 
+                className="cursor-grab active:cursor-grabbing p-1 text-gray-500 hover:text-white transition-colors"
+            >
+                <Menu size={18} />
+            </div>
+
             <div className="text-gray-400">№{id}</div>
             <div className="text-gray-300">Канал ID: {channelId}</div>
             <div className="truncate pr-4 font-medium" title={message}>

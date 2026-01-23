@@ -7,7 +7,6 @@ import { useGetChannelForGeography } from '../api/use-get-channel-for-geography'
 export interface ChannelData {
     id: number;
     name: string;
-    region: string;
     subscribers: string;
     label: string;
     price: string;

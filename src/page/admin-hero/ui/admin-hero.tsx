@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Search } from "lucide-react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -8,37 +8,66 @@ import { useQueryClient } from "@tanstack/react-query"
 import { AdminButton } from "@/shared/ui/admin/ui/admin-button"
 import { AdminPageTitle } from "@/shared/ui/admin/ui/admin-page-title"
 import { AdminInput } from "@/shared/ui/admin/ui/form/admin-input"
-import { useConfirm } from "@/shared/lib/confirm-dialog" // Ваш хук подтверждения
+import { useConfirm } from "@/shared/lib/confirm-dialog"
 
 import { useAdminHero } from "../api/use-admin-hero"
 import { deleteHero } from "../api/delete-hero"
 import { AdminHeroTable } from "./admin-hero-table"
+import { HeroChannelViewDto } from "../types/admin-hero" // Импортируем DTO
+import { reorderHero } from "../api/reorder-hero"
 
 export const AdminHero = () => {
-    // Hooks
     const router = useRouter();
     const queryClient = useQueryClient();
     const { confirm } = useConfirm();
 
     // Data Fetching
     const { data: heroChannels, isLoading } = useAdminHero();
-    const items = heroChannels || [];
-
-    // State
+    
+    // --- LOCAL STATE ---
+    // Строгая типизация через DTO
+    const [localItems, setLocalItems] = useState<HeroChannelViewDto[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
 
-    // --- ЛОГИКА ФИЛЬТРАЦИИ ---
-    const filteredItems = items.filter(item => {
+    // Синхронизация с сервером
+    useEffect(() => {
+        if (heroChannels) {
+            setLocalItems(heroChannels);
+        }
+    }, [heroChannels]);
+
+    // Фильтрация
+    const filteredItems = localItems.filter(item => {
         const lowerTerm = searchTerm.toLowerCase();
         return (
-            // Ищем по сообщению
             item.message.toLowerCase().includes(lowerTerm) || 
-            // Ищем по ID канала
             String(item.channelId).includes(lowerTerm)
         );
     });
 
-    // --- ЛОГИКА УДАЛЕНИЯ ---
+    // --- ЛОГИКА REORDER ---
+    const handleReorder = async (newItems: HeroChannelViewDto[]) => {
+        // 1. Сохраняем текущее состояние для возможного отката
+        const previousItems = [...localItems];
+
+        // 2. Оптимистичное обновление (UI меняется мгновенно)
+        setLocalItems(newItems);
+
+        try {
+            // 3. Достаем только массив ID
+            const ids = newItems.map((item) => item.id);
+            
+            // 4. Отправляем запрос на сервер
+            await reorderHero(ids);
+            
+        } catch (error) {
+            console.error("Ошибка сохранения порядка, откат изменений", error);
+            
+            // 5. ROLLBACK: Если ошибка, молча возвращаем старый список
+            setLocalItems(previousItems);
+        }
+    };
+
     const handleDelete = (id: number) => {
         confirm({
             title: "Удалить запись из Hero?",
@@ -48,7 +77,6 @@ export const AdminHero = () => {
             onConfirm: async () => {
                 try {
                     await deleteHero(id);
-                    // Обновляем данные в таблице
                     queryClient.invalidateQueries({ queryKey: ['Admin Hero Table'] });
                 } catch (e) {
                     console.error("Ошибка при удалении", e);
@@ -79,13 +107,13 @@ export const AdminHero = () => {
                 />
             </div>
 
-            {/* Таблица */}
             <AdminHeroTable 
                 items={filteredItems}
                 isLoading={isLoading}
                 searchTerm={searchTerm}
                 onDelete={handleDelete}
                 onEdit={(id) => router.push(`/admin/hero/edit/${id}`)}
+                onReorder={handleReorder}
             />
         </div>
     )

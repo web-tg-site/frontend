@@ -1,4 +1,4 @@
-import { FilePenLine, Plus, Drama, UsersRound, FileText, FolderPen, FolderPlus, Folder, LayoutTemplate } from "lucide-react";
+import { FilePenLine, Plus, Drama, UsersRound, FileText, FolderPen, FolderPlus, Folder, LayoutTemplate, Map } from "lucide-react";
 import { Navigation } from "../types/navigation";
 
 export const NAV_DATA: Navigation[] = [
@@ -33,6 +33,12 @@ export const NAV_DATA: Navigation[] = [
         icon: LayoutTemplate,
         name: "Редактирование hero",
         href: "/admin/hero",
+        roles: ['admin']
+    },
+    {
+        icon: Map,
+        name: 'Редактирование карты',
+        href: '/admin/map',
         roles: ['admin']
     },
     

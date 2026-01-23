@@ -1,27 +1,22 @@
-import { ChannelResponse } from "@/shared/types";
+import { MapResponse } from "@/shared/types";
 import { ChannelData } from "../ui/map";
 
-const getRandom = (min: number, max: number) => {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-
-export const fromChannelResponseToChannelData = (channel: ChannelResponse): ChannelData => {
+export const fromChannelResponseToChannelData = (map: MapResponse): ChannelData => {
     return {
-        id: channel.id,
-        name: channel.name,
-        region: 'РФ',
-        subscribers: channel.subscribers,
+        id: map.channel.id,
+        name: map.channel.name,
+        subscribers: map.channel.subscribers,
         label: 'Подписчиков',
-        price: channel.coast,
-        iconUrl: channel.image,
-        slug: channel.slug,
+        price: map.channel.coast,
+        iconUrl: map.channel.image,
+        slug: map.channel.slug,
         coords: {
-            top: getRandom(10, 80),
-            left: getRandom(10, 90),
+            top: map.top,
+            left: map.left,
         }
     }
 }
 
-export const fromChannelResponseArrayToChannelDataArray = (channel: ChannelResponse[]): ChannelData[] => {
+export const fromChannelResponseArrayToChannelDataArray = (channel: MapResponse[]): ChannelData[] => {
     return channel.map((c) => fromChannelResponseToChannelData(c));
 }

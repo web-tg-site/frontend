@@ -23,7 +23,7 @@ export const AdminLeftPanel = () => {
     }
 
     return (
-        <AdminCard className="p-5 w-[290px] min-h-[700px] flex flex-col">
+        <AdminCard className="p-5 w-[290px] min-h-[750px] flex flex-col">
             <Image 
                 src='/logo.svg'
                 alt='Логотип'

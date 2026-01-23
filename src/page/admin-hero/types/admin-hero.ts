@@ -13,6 +13,7 @@ export interface AdminHeroTableProps {
     searchTerm: string;
     onDelete: (id: number) => void;
     onEdit: (id: number) => void;
+    onReorder?: (newItems: HeroChannelViewDto[]) => void
 }
 
 export interface AdminHeroRowProps extends HeroChannelViewDto {
