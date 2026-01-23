@@ -2,16 +2,19 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { Trash2, Plus, Save, Loader2, X } from "lucide-react"; 
+
 import { AdminPageTitle } from "@/shared/ui/admin/ui/admin-page-title";
-import { MapResponse } from "@/shared/types";
-import { Trash2, Plus, Save, Loader2 } from "lucide-react"; 
-import { useAdminMapMutations, useGetAdminMap } from "../api/use-get-admin-map";
 import { AdminButton } from "@/shared/ui/admin/ui/admin-button";
+import { MapResponse } from "@/shared/types"; 
+import { useConfirm } from "@/shared/lib/confirm-dialog";
+
+import { useAdminMapMutations, useGetAdminMap } from "../api/use-get-admin-map";
 import { SelectChannelModal } from "./select-channel-modal";
 import { UpdateMapPinPayload } from "../types";
 
 export const AdminMap = () => {
-    // Получаем массив
+    const { confirm } = useConfirm();
     const { data: serverMap, isLoading: mapLoading } = useGetAdminMap();
     const { updatePositions, deletePin, addPin } = useAdminMapMutations();
 
@@ -22,15 +25,17 @@ export const AdminMap = () => {
     const [draggingId, setDraggingId] = useState<number | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Синхронизация
+    // Загрузка данных
     useEffect(() => {
         if (serverMap) {
             setPins(serverMap);
         }
     }, [serverMap]);
 
-    // --- LOGIC ---
+    // --- Drag Logic ---
     const handleMouseDown = (e: React.MouseEvent, id: number) => {
+        if ((e.target as HTMLElement).closest('button')) return;
+        
         e.stopPropagation();
         e.preventDefault();
         setDraggingId(id);
@@ -40,10 +45,10 @@ export const AdminMap = () => {
         if (draggingId === null || !containerRef.current) return;
 
         const containerRect = containerRef.current.getBoundingClientRect();
-        
         let x = e.clientX - containerRect.left;
         let y = e.clientY - containerRect.top;
 
+        // Clamp
         x = Math.max(0, Math.min(x, containerRect.width));
         y = Math.max(0, Math.min(y, containerRect.height));
 
@@ -72,44 +77,61 @@ export const AdminMap = () => {
         };
     }, [draggingId]);
 
-    // --- ACTIONS ---
+    // --- Actions ---
 
     const handleSave = () => {
-        // Подготавливаем данные. Id здесь НУЖЕН для формирования массива,
-        // но useAdminMapMutations его вырежет перед отправкой в body.
         const updates: UpdateMapPinPayload[] = pins.map(p => ({
             id: p.id,
-            channelId: p.channelId, 
+            channelId: p.channelId,
             left: Number(p.left.toFixed(4)),
             top: Number(p.top.toFixed(4))
         }));
-        
         updatePositions.mutate(updates);
     };
 
-    const handleDelete = (id: number) => {
-        if(confirm("Удалить канал с карты?")) {
-            deletePin.mutate(id);
-            // Оптимистичное удаление
-            setPins(prev => prev.filter(p => p.id !== id));
+     const handleDelete = (id: number) => {
+        const pinToDelete = pins.find(p => p.id === id);
+        const channelName = pinToDelete?.channel?.name || "этот канал";
+
+        confirm({
+            title: "Убрать канал с карты?",
+            description: `“${channelName}”`,
+            confirmText: "Удалить",
+            cancelText: "Отменить",
+            onConfirm: () => {
+                deletePin.mutate(id);
+                setPins(prev => prev.filter(p => p.id !== id));
+            }
+        });
+    };
+
+    const handleAddChannel = async (channel: any) => {
+        setIsAddModalOpen(false);
+
+        try {
+            const newMapItem = await addPin.mutateAsync({
+                channelId: channel.id,
+                left: 50,
+                top: 50
+            });
+
+            const newPinLocal: MapResponse = {
+                ...newMapItem,
+                channel: newMapItem.channel || channel 
+            };
+
+            setPins(prev => [...prev, newPinLocal]);
+        } catch (error) {
+            console.error("Ошибка при добавлении", error);
         }
     };
 
-    const handleAddChannel = (channelId: number) => {
-        addPin.mutate({
-            channelId,
-            left: 50,
-            top: 50
-        });
-        setIsAddModalOpen(false);
-    };
-
-    if (mapLoading) return <div className="p-10 text-white">Загрузка карты...</div>;
+    if (mapLoading && pins.length === 0) return <div className="p-10 text-white">Загрузка карты...</div>;
 
     return (
         <div className="space-y-6 w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <AdminPageTitle title="Редактирование карты" />
+            <div className="flex items-center justify-between">
+                <AdminPageTitle title="Редактирование карты" className="mb-0!" />
                 
                 <div className="flex gap-3">
                     <AdminButton 
@@ -123,14 +145,25 @@ export const AdminMap = () => {
                     <AdminButton 
                         onClick={handleSave} 
                         disabled={updatePositions.isPending}
-                        className="bg-blue-600 hover:bg-blue-700 text-white min-w-[140px]"
+                        className={`
+                            text-white min-w-[150px] transition-all duration-300 border-none
+                            ${updatePositions.isPending 
+                                ? "bg-blue-500/70 cursor-wait shadow-inner" 
+                                : "bg-blue-600 hover:bg-blue-700 shadow-md"
+                            }
+                        `}
                     >
                         {updatePositions.isPending ? (
-                            <Loader2 size={18} className="animate-spin mr-2" />
+                            <>
+                                <Loader2 size={18} className="animate-spin mr-2" />
+                                <span className="animate-pulse">Сохраняем...</span>
+                            </>
                         ) : (
-                            <Save size={18} className="mr-2" />
+                            <>
+                                <Save size={18} className="mr-2" />
+                                <span>Сохранить</span>
+                            </>
                         )}
-                        {updatePositions.isPending ? 'Сохранение...' : 'Сохранить'}
                     </AdminButton>
                 </div>
             </div>
@@ -158,41 +191,47 @@ export const AdminMap = () => {
                             style={{
                                 top: `${pin.top}%`,
                                 left: `${pin.left}%`,
-                                transform: 'translate(-50%, -50%)', // Центр пина = координаты
+                                // --- FIX POSITION ---
+                                // translate(-50%) центрирует по горизонтали (убирает сдвиг вправо/влево)
+                                // translate(-95%) поднимает пин так, что курсор оказывается на его острие
+                                transform: 'translate(-50%, -95%)', 
                                 cursor: draggingId === pin.id ? 'grabbing' : 'grab'
                             }}
                         >
-                            <div className={`
-                                relative w-12 h-12 rounded-full overflow-hidden 
-                                border-2 transition-all duration-200 ease-out
-                                ${draggingId === pin.id 
-                                    ? 'border-blue-500 scale-125 shadow-[0_0_20px_rgba(59,130,246,0.5)] z-50' 
-                                    : 'border-white/80 hover:scale-110 hover:border-white shadow-lg z-20'}
-                            `}>
-                                <img 
-                                    src={pin.channel?.image || '/placeholder.png'} 
-                                    alt={pin.channel?.name || 'Chan'} 
-                                    className="w-full h-full object-cover pointer-events-none bg-gray-800" 
-                                />
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(pin.id);
+                                }}
+                                className="absolute -top-3 -right-3 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-md transform scale-75 group-hover:scale-100"
+                                title="Удалить"
+                            >
+                                <X size={14} />
+                            </button>
 
-                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDelete(pin.id);
-                                        }}
-                                        className="text-red-500 hover:text-red-400 p-1 hover:bg-white/10 rounded-full transition-colors"
-                                        title="Удалить"
-                                    >
-                                        <Trash2 size={20} />
-                                    </button>
+                            <div className={`
+                                relative w-12 h-12 sm:w-16 sm:h-16 
+                                rotate-45 rounded-full rounded-br-none 
+                                border-[3px] shadow-xl overflow-hidden
+                                transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+                                bg-[#3B82F6]
+                                ${draggingId === pin.id 
+                                    ? 'scale-110 border-white z-40 shadow-2xl' 
+                                    : 'scale-75 hover:scale-100 border-white/20 hover:border-white z-20'}
+                            `}>
+                                <div className="w-full h-full -rotate-45 overflow-hidden rounded-full bg-white shadow-inner">
+                                    <img 
+                                        src={pin.channel?.image || '/placeholder.png'} 
+                                        alt={pin.channel?.name || 'CH'} 
+                                        className="w-full h-full object-cover pointer-events-none" 
+                                    />
                                 </div>
                             </div>
                             
                             <div className={`
-                                absolute top-full mt-2 left-1/2 -translate-x-1/2 
-                                bg-[#222] text-white text-xs font-medium px-3 py-1.5 rounded-md 
-                                whitespace-nowrap shadow-xl border border-white/10 pointer-events-none
+                                absolute top-[120%] left-1/2 -translate-x-1/2 
+                                bg-black/80 text-white text-[10px] sm:text-xs font-medium px-2 py-1 rounded-md 
+                                whitespace-nowrap shadow-lg backdrop-blur-sm pointer-events-none
                                 transition-all duration-200
                                 ${draggingId === pin.id ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}
                             `}>
