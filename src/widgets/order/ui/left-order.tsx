@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import { cn } from "@/shared/utils";
 import { Headline } from "@/shared/ui/text";
-// Убрали импорты конкретных иконок (Gamepad2, Landmark и т.д.), так как они приходят строкой
 import { useMatterPhysics } from "../hooks/use-matter-physics";
 import { useCategories } from "../api/use-categories";
 import { DynamicIcon } from "@/shared/ui/dynamic-icon";
@@ -31,10 +30,11 @@ export const LeftOrder = () => {
             {/* Сцена */}
             <div 
                 ref={sceneRef} 
-                className="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"
+                // 1. Добавили pointer-events-none, чтобы тач по пустому месту уходил в "родителя" и скроллил страницу
+                // Убрали cursor-grab отсюда, так как фон теперь неактивен для мыши
+                className="absolute inset-0 w-full h-full z-0 pointer-events-none"
                 style={{ touchAction: 'pan-y' }} 
             >
-                {/* 3. Рендерим категории, пришедшие с бэкенда */}
                 {categories.map((tag) => (
                     <div
                         key={tag.id}
@@ -44,6 +44,9 @@ export const LeftOrder = () => {
                         className={cn(
                             "absolute top-0 left-0",
                             "flex items-center rounded-full",
+                            // 2. Добавили pointer-events-auto, чтобы пузыри можно было хватать
+                            // 3. Перенесли сюда стили курсора
+                            "pointer-events-auto cursor-grab active:cursor-grabbing",
                             "bg-transparent text-white font-semibold select-none whitespace-nowrap",
                             "transition-colors hover:bg-white/10",
                             "gap-2 px-3 py-2 border", 
@@ -57,13 +60,11 @@ export const LeftOrder = () => {
                             willChange: 'transform'
                         }}
                     >
-                        {/* 4. Используем DynamicIcon для иконки из строки (например "gamepad-2") */}
                         <DynamicIcon 
                             name={tag.icon} 
                             className="w-4 h-4 lg:w-7 lg:h-7" 
                             strokeWidth={2} 
                         />
-                        {/* 5. Выводим title (так как в маппере хука ты назвал поле title) */}
                         <span>{tag.title}</span>
                     </div>
                 ))}
