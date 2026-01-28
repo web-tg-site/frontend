@@ -3,7 +3,6 @@
 import { cookies } from 'next/headers'
 
 export async function setAuthCookie(token: string) {
-    console.log('[LOGS][RESPONSE TOKEN]:', token);
     const cookieStore = await cookies();
 
     const isProduction = process.env.NODE_ENV === 'production';

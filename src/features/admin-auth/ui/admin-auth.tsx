@@ -28,27 +28,20 @@ const AdminAuthContent = () => {
     } = useForm<LoginFormData>()
 
     const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
-        console.log("1. Начало отправки формы")
         
         // Очищаем предыдущую ошибку
         setServerError(null)
 
         try {
-            // Проверка reCAPTCHA
-            console.log("2. Проверяем reCAPTCHA")
             if (!executeRecaptcha) {
                 throw new Error("Защита не готова. Обновите страницу.")
             }
 
             const recaptchaToken = await executeRecaptcha("admin_login")
-            console.log("3. Получен токен reCAPTCHA:", !!recaptchaToken)
 
             if (!recaptchaToken) {
                 throw new Error("Не удалось получить токен защиты")
             }
-
-            // Проверка капчи на сервере
-            console.log("4. Проверяем капчу на сервере")
             const checkResponse = await fetch('/api/check-captcha', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -58,33 +51,21 @@ const AdminAuthContent = () => {
             if (!checkResponse.ok) {
                 throw new Error("Проверка безопасности не пройдена")
             }
-            console.log("5. Капча прошла проверку")
-
-            // Отправка данных авторизации
-            console.log("6. Отправляем данные авторизации")
             const response = await sendAuth(data)
-            console.log("7. Ответ от сервера:", response)
             
             // Проверяем токен
             if (!response?.access_token) {
-                console.error("8. Токен отсутствует в ответе:", response)
                 throw new Error("Токен не получен от сервера")
             }
-
-            // Сохраняем токен в куки
-            console.log("8. Сохраняем токен в куки")
             const cookieResult = await setAuthCookie(response.access_token)
-            console.log("9. Результат сохранения куки:", cookieResult)
 
             if (cookieResult?.success) {
-                console.log("10. Редирект на /admin")
                 router.push("/admin")
             } else {
                 throw new Error(cookieResult?.error || "Ошибка сохранения сессии")
             }
 
         } catch (error) {
-            console.error("❌ Ошибка:", error)
 
             let errorMessage = "Произошла неизвестная ошибка"
 
