@@ -68,12 +68,13 @@ export const MyCollections = ({
                     {/* 4. Состояние загрузки */}
                     {isLoading && (
                         Array.from({ length: channelIds.length || 3 }).map((_, idx) => (
-                             <ChannelCard 
+                            <ChannelCard 
                                 key={`skeleton-${idx}`}
                                 loading={true}
                                 // Заглушки для TS
                                 id={0} name="" slug="" image="" subscribers="" price={0} category={{} as any}
-                             />
+                                socialType="telegram"
+                            />
                         ))
                     )}
 
