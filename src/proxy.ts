@@ -15,8 +15,6 @@ export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
     const token = request.cookies.get('accessToken')?.value
 
-    console.log(`[MW] Path: ${pathname} | Token: ${token ? 'YES' : 'NO'}`)
-
     const normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
     
     const isLoginPage = normalizedPath === LOGIN_ROUTE
@@ -68,8 +66,6 @@ export async function proxy(request: NextRequest) {
                 )
 
                 if (isRestricted) {
-                    console.log(`[MW] Moderator restricted access: ${pathname} -> Rewrite 404`)
-                    // Скрываем существование страницы
                     return NextResponse.rewrite(new URL('/404', request.url))
                 }
             }
@@ -77,10 +73,7 @@ export async function proxy(request: NextRequest) {
             return NextResponse.next()
 
         } catch (error) {
-            console.error('[MW] Error:', error)
             const response = NextResponse.rewrite(new URL('/404', request.url))
-            // Удаляем куку только если ошибка авторизации, чтобы не зациклить
-            // Но в данном контексте безопасно удалить
             response.cookies.delete('accessToken')
             return response
         }
