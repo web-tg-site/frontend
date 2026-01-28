@@ -6,7 +6,6 @@ import { BOTTOM_SERVICE, TOP_SERVICE } from "../config/service"
 import { OurServiceCard } from "./our-service-card"
 import { motion } from "framer-motion"
 import { containerVariants } from "../config/animation"
-import { cn } from "@/shared/utils"
 
 export const OurService = () => {
     const allServices = [...TOP_SERVICE, ...BOTTOM_SERVICE]
@@ -25,7 +24,7 @@ export const OurService = () => {
 
                 <div className="flex justify-center mb-12.5">
                     <Text className="max-w-[639px] w-full text-black/60 text-center">
-                        Мы берём на себя полный цикл размещения рекламы в Telegram — от подбора каналов до выхода постов и контроля размещений.
+                        Мы берём на себя полный цикл размещения рекламы в Telegram, ВК, MAX — от подбора каналов до выхода постов и контроля размещений.
                     </Text>
                 </div>
             </motion.div>

@@ -9,7 +9,7 @@ export const ADVANTAGE_ITEMS: AdvantagesCardItem[] = [
     {
         num: 2,
         color: "#3B82F6", // Синий
-        text: "Доступ к большинству рекламных площадок Telegram и ВК"
+        text: "Доступ к большинству рекламных площадок Telegram, ВК и MAX"
     },
     {
         num: 3,
@@ -29,7 +29,7 @@ export const ADVANTAGE_ITEMS: AdvantagesCardItem[] = [
     {
         num: 6,
         color: "#A87556", // Коричневый
-        text: "Простота работы и единая точка входа"
+        text: "Простота и удобство"
     },
     {
         num: 7,

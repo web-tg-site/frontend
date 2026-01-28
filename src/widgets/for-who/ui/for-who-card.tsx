@@ -28,7 +28,7 @@ export const ForWhoCard = ({
             "lg:rounded-[50px]", // Чуть меньше скругление для компактности
             
             // !!! ЕЩЕ МЕНЬШЕ ВЫСОТА (было 300px -> стало 270px)
-            "lg:min-h-[230px]" 
+            "lg:min-h-[270px]" 
         )}>
             <div className={cn(
                 "flex flex-col w-full flex-grow",

@@ -40,8 +40,8 @@ export const Cities = () => (
             </div>
 
             {/* НИЖНИЙ БЛОК (Текст) */}
-            <div className="pb-7.5 px-8 pt-2 flex-shrink-0">
-                <Numbers className="text-black">30+</Numbers>
+            <div className="pb-7.5 px-8 pt-2 shrink-0">
+                <Numbers className="text-black">45+</Numbers>
                 <Text variant="3" className="text-black/60">Городов присутствия</Text>
             </div>
         </WeCard>

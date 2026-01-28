@@ -49,10 +49,10 @@ export const ForWho = () => {
                     ЦЕНТРАЛЬНАЯ НИЖНЯЯ КАРТОЧКА 
                     Приподнята выше (bottom-50)
                 */}
-                <div className="relative w-full max-w-[393px] min-[501px]:max-w-[80%] lg:max-w-[350px] min-[501px]:absolute lg:bottom-[50px] min-[501px]:left-1/2 min-[501px]:-translate-x-1/2">
+                <div className="relative w-full max-w-[393px] min-[501px]:max-w-[80%] lg:max-w-[350px] min-[501px]:absolute lg:bottom-[30px] min-[501px]:left-1/2 min-[501px]:-translate-x-1/2">
                     <ForWhoCard 
                         title="Маркетинговые и рекламные агентства"
-                        text="Надёжный партнёр для закупки Telegram-трафика под клиентов"
+                        text="Надёжный партнёр для закупки Telegram, ВК и MAX-трафиков под клиентов"
                         bottom
                     />
                 </div>
