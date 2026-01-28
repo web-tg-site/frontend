@@ -6,13 +6,14 @@ export const AdminChannelsTable = ({
     isLoading, 
     searchTerm,
     withActions = true,
-    onEdit,   // <-- Принимаем
-    onDelete  // <-- Принимаем
+    onEdit,
+    onDelete
 }: AdminChannelsTableProps) => {
 
+    // Добавили 1fr для колонки соц. сети
     const gridClassName = withActions
-        ? "grid grid-cols-[0.5fr_2fr_1fr_1fr_1fr_0.8fr] gap-4 items-center"
-        : "grid grid-cols-[0.5fr_2.8fr_1fr_1fr_1fr] gap-4 items-center";
+        ? "grid grid-cols-[0.5fr_2fr_1fr_1fr_1fr_1fr_0.8fr] gap-4 items-center"
+        : "grid grid-cols-[0.5fr_2.8fr_1fr_1fr_1fr_1fr] gap-4 items-center";
 
     return (
         <div className="w-full overflow-x-auto pb-4">
@@ -24,6 +25,7 @@ export const AdminChannelsTable = ({
                     <div>Категория</div>
                     <div>Подписчики</div>
                     <div>Стоимость</div>
+                    <div>Соц. сеть</div> {/* <-- Новый заголовок */}
                     {withActions && <div className="text-right pr-2">Действия</div>}
                 </div>
 
@@ -39,6 +41,7 @@ export const AdminChannelsTable = ({
                                 <div className="h-4 w-20 bg-white/5 rounded" />
                                 <div className="h-4 w-16 bg-white/5 rounded" />
                                 <div className="h-4 w-20 bg-white/5 rounded" />
+                                <div className="h-4 w-20 bg-white/5 rounded" /> {/* <-- Скелетон для соц. сети */}
                                 {withActions && (
                                     <div className="flex justify-end gap-2">
                                         <div className="w-8 h-8 rounded-full bg-white/5" />
@@ -56,10 +59,11 @@ export const AdminChannelsTable = ({
                                 category={item.category}
                                 subscribers={item.subscribers}
                                 price={item.price}
+                                socialType={item.socialType} // <-- Передаем socialType
                                 searchTerm={searchTerm}
                                 withActions={withActions}
-                                onEdit={onEdit}     // <-- Передаем дальше в строку
-                                onDelete={onDelete} // <-- Передаем дальше в строку
+                                onEdit={onEdit}
+                                onDelete={onDelete}
                             />
                         ))
                     )}

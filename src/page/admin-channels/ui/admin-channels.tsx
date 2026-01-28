@@ -16,6 +16,7 @@ import { deleteChannel } from "../api/delete-channel";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { SOCIALS_OPTIONS } from "@/shared/config/social-options";
 
 export const AdminChannels = ({
     type
@@ -34,6 +35,7 @@ export const AdminChannels = ({
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<string | number | null>(null);
     const [selectedSubscribers, setSelectedSubscribers] = useState<string | number | null>(null);
+    const [selectedSocial, setSelectedSocial] = useState<string | number | null>(null);
 
     // Загрузка данных категорий
     const { data: categoryData, isLoading: categoryLoading } = useAdminCategories();
@@ -75,7 +77,14 @@ export const AdminChannels = ({
             }
         }
 
-        return matchesSearch && matchesCategory && matchesSubscribers;
+        // 4. Фильтр по социальной сети (Новая логика)
+        let matchesSocial = true;
+        if (selectedSocial) {
+            // Сравниваем значение из селекта (например "telegram") с socialType из базы
+            matchesSocial = channel.socialType === selectedSocial;
+        }
+
+        return matchesSearch && matchesCategory && matchesSubscribers && matchesSocial;
     });
 
     // Функция-обработчик клика на иконку корзины
@@ -111,7 +120,7 @@ export const AdminChannels = ({
 
             <div className="grid grid-cols-4 gap-1.5 mb-7.5">
                 {/* Поиск */}
-                <div className="col-span-2">
+                <div className="col-span-1">
                     <AdminInput 
                         placeholder="Поиск" 
                         icon={<Search size={16} className="text-white"/>}
@@ -143,6 +152,17 @@ export const AdminChannels = ({
                         onChange={(val) => setSelectedSubscribers(val)}
                     />
                 </div>
+
+                {/* Выбор соц. сети */}
+                <div className="col-span-1">
+                    <AdminSelect 
+                        variant="alternative"
+                        placeholder="Социальная сеть"
+                        options={SOCIALS_OPTIONS}
+                        value={selectedSocial}
+                        onChange={(val) => setSelectedSocial(val)}
+                    />
+                </div>
             </div>
 
             {/* Таблица */}
@@ -151,7 +171,7 @@ export const AdminChannels = ({
                 isLoading={channelLoading}
                 searchTerm={searchTerm}
                 withActions={isEditable}
-                onDelete={handleDeleteClick} // Передаем нашу функцию
+                onDelete={handleDeleteClick}
                 onEdit={(id) => router.push(`/admin/channels/edit/${id}`)}
             />
         </div>

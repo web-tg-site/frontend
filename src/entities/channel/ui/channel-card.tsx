@@ -7,6 +7,7 @@ import { Text } from "@/shared/ui";
 import { cn, formatPrice } from "@/shared/utils";
 import { ChannelCardProps } from "../types/channel-card.props";
 import { useCollections } from "@/shared/store/use-collections";
+import { SocialIcon } from "./social-icon";
 
 export const ChannelCard = ({
     id,
@@ -21,6 +22,7 @@ export const ChannelCard = ({
     isSelected = false,
     buttonAction = 'add',
     slug,
+    socialType,
     onAdminClick
 }: ChannelCardProps) => {
     const openModal = useCollections((state) => state.openModal);
@@ -31,7 +33,7 @@ export const ChannelCard = ({
         return (
             <div className={cn(
                 "py-3 px-4 rounded-[20px] border border-transparent",
-                isAdmin ? "bg-[#282828]" : "bg-white"
+                isAdmin ? "bg-background" : "bg-white"
             )}>
                 <div className="flex items-center mb-[21px]">
                     <div className={cn("w-[100px] h-[100px] rounded-[20px] mr-5 animate-pulse shrink-0", isAdmin ? "bg-white/5" : "bg-gray-200")} />
@@ -71,13 +73,20 @@ export const ChannelCard = ({
     const cardContent = (
         <>
             <div className="flex items-center mb-[21px]">
-                <Image 
-                    width={100}
-                    height={100}
-                    src={image}
-                    alt={name}
-                    className="w-[100px] h-[100px] object-cover rounded-[20px] mr-5 shrink-0 transition-opacity duration-300 group-hover:opacity-90 bg-gray-800"
-                />
+                <div className="relative">
+                    <Image 
+                        width={100}
+                        height={100}
+                        src={image}
+                        alt={name}
+                        className="w-[100px] h-[100px] object-cover rounded-[20px] mr-5 shrink-0 transition-opacity duration-300 group-hover:opacity-90 bg-gray-800"
+                    />
+
+                    <SocialIcon 
+                        social={socialType}
+                        className="absolute top-2.5 right-7.5"
+                    />
+                </div>
 
                 <div className="flex-1 min-w-0 pr-2">
                     <p className={cn(
@@ -165,7 +174,7 @@ const BottomCard = ({
         <div className={cn(
             "w-full pt-1 pb-2 px-2 border text-center rounded-2xl transition-colors duration-300",
             !isAdmin && "border-black/5 bg-[#F9F9F9] group-hover:bg-[#f0f0f0]",
-            isAdmin && "border-transparent bg-[#282828]" 
+            isAdmin && "border-transparent bg-background" 
         )}>
             <Text variant="2" className={cn(isAdmin ? "text-white" : "text-black")}>
                 {topText}

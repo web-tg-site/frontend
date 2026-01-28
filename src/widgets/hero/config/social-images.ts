@@ -1,0 +1,1 @@
+export const SOCIALS_IMAGES: string[] = ['vk', 'max', 'telegram']

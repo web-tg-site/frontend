@@ -8,14 +8,26 @@ export const AdminChannelsRow = ({
     category,
     subscribers,
     price,
+    socialType, // <-- Принимаем проп
     onEdit,
     onDelete,
     searchTerm = "",
     withActions = true
 }: AdminChannelsRowProps) => {
+    // Обновляем сетку, добавляя 1fr
     const gridClassName = withActions
-        ? "grid grid-cols-[0.5fr_2fr_1fr_1fr_1fr_0.8fr] gap-4 items-center"
-        : "grid grid-cols-[0.5fr_2.8fr_1fr_1fr_1fr] gap-4 items-center";
+        ? "grid grid-cols-[0.5fr_2fr_1fr_1fr_1fr_1fr_0.8fr] gap-4 items-center"
+        : "grid grid-cols-[0.5fr_2.8fr_1fr_1fr_1fr_1fr] gap-4 items-center";
+
+    // Функция для получения названия соцсети
+    const getSocialName = (type: string | undefined) => {
+        switch (type) {
+            case 'telegram': return 'Телеграм';
+            case 'vk': return 'Вконтакте';
+            case 'max': return 'MAX';
+            default: return type || '-';
+        }
+    };
 
     const renderHighlightedName = (text: string, highlight: string) => {
         if (!highlight.trim()) return <span className="text-white">{text}</span>;
@@ -50,7 +62,11 @@ export const AdminChannelsRow = ({
                 {formatPrice(price)}р
             </div>
             
-            {/* Рендерим кнопки только если withActions === true */}
+            {/* Новая колонка: Социальная сеть */}
+            <div className="text-[18px] text-gray-300">
+                {getSocialName(socialType)}
+            </div>
+            
             {withActions && (
                 <div className="flex items-center justify-end gap-2">
                     <button 

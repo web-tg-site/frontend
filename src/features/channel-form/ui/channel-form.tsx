@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useForm, Controller, useFieldArray, SubmitHandler } from "react-hook-form"
 import axios, { isAxiosError } from "axios"
 import { Trash } from "lucide-react"
@@ -16,52 +16,19 @@ import { AdminSelect } from "@/shared/ui/admin/ui/form/admin-select"
 import { AdminFileUpload } from "@/shared/ui/admin/ui/form/admin-file-upload"
 import { AdminFormGroup } from "@/shared/ui/admin/ui/form/admin-form-group"
 import { AdminCheckbox } from "@/shared/ui/admin/ui/form/admin-checkbox"
+import { AdminToggleGroup } from "@/shared/ui/admin/ui/form/admin-toggle-group"
 
 // Types & Utils
 import { ChannelFormProps } from "../types/channel-form.props"
 import { useAdminCategories } from "@/page/admin-channels/api/use-admin-category"
 import { FORMAT_OPTIONS } from "../config/format-options"
+import { SOCIALS_OPTIONS } from "../../../shared/config/social-options"
 
 // API
 import { createChannel } from "../api/create-channel"
 import { updateChannel } from "../api/update-channel"
 import { getChannel } from "../api/get-channel"
-
-interface CreateChannelForm {
-    name: string;
-    categoryId: number | string;
-    image: File | string | null;
-    description: string;
-    subscribers: string;
-    coast: string;
-    lectureHall: {
-        activePercentage: string;
-        statsData: {
-            likes: string;
-            comments: string;
-            reposts: string;
-        };
-        interestsItems: { value: string }[]; 
-        geographyItems: { name: string; percent: string }[];
-        consumption: string;
-        howRead: string;
-        reaction: string;
-        frequency: string;
-    };
-    content: {
-        formats: string[];
-        stats: {
-            overallCoverage: string;
-            monthlyCoverage: string;
-            er: string;
-        };
-    };
-    priceAdd: {
-        advertisement: string;
-        integration: string;
-        repost: string;
-    };
-}
+import { CreateChannelForm } from "../types/create-channel-form"
 
 export const ChannelForm = ({
     type='create',
@@ -70,7 +37,6 @@ export const ChannelForm = ({
     const queryClient = useQueryClient();
     const router = useRouter();
     
-    // 1. Получаем данные категорий
     const { data: categoryData, isLoading: categoryLoading } = useAdminCategories();
     const categoryOptions = categoryData || []; 
     
@@ -85,6 +51,7 @@ export const ChannelForm = ({
             subscribers: '',
             coast: '',
             categoryId: '',
+            socialType: 'telegram',
             image: null,
             lectureHall: {
                 activePercentage: '',
@@ -127,7 +94,8 @@ export const ChannelForm = ({
 
                     reset({
                         name: data.name,
-                        categoryId: data.categoryId, // ID категории
+                        categoryId: data.categoryId,
+                        socialType: data.socialType,
                         image: data.image,
                         description: data.description,
                         subscribers: String(data.subscribers),
@@ -200,7 +168,6 @@ export const ChannelForm = ({
             clearErrors("root");
             let imageUrl = "";
 
-            // 1. Работа с изображением
             if (data.image && data.image instanceof File) {
                 const formData = new FormData();
                 formData.append("file", data.image);
@@ -221,7 +188,6 @@ export const ChannelForm = ({
                 imageUrl = data.image;
             }
 
-            // 2. Payload
             const payload = {
                 ...data,
                 categoryId: Number(data.categoryId),
@@ -242,7 +208,6 @@ export const ChannelForm = ({
                 }
             };
 
-            // 3. API запрос
             if (type === 'create') {
                 await createChannel(payload);
             } else {
@@ -307,7 +272,6 @@ export const ChannelForm = ({
                                 )}
                             />
 
-                            {/* ✅ ИСПРАВЛЕНО: СЕЛЕКТ С ПОИСКОМ */}
                             <Controller
                                 control={control}
                                 name="categoryId"
@@ -315,15 +279,30 @@ export const ChannelForm = ({
                                 render={({ field }) => (
                                     <AdminSelect 
                                         placeholder="Выбрать категорию" 
-                                        options={categoryOptions} // Передаем обработанные опции
+                                        options={categoryOptions}
                                         value={field.value} 
                                         onChange={field.onChange}
                                         error={errors.categoryId?.message}
                                         isLoading={categoryLoading}
-                                        isSearchable={true} // Включаем поиск
+                                        isSearchable={true}
                                     />
                                 )}
                             />
+
+                            <div className="col-span-2">
+                                <Controller
+                                    control={control}
+                                    name="socialType"
+                                    rules={{ required: "Выберите тип соцсети" }}
+                                    render={({ field }) => (
+                                        <AdminToggleGroup 
+                                            options={SOCIALS_OPTIONS}
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                        />
+                                    )}
+                                />
+                            </div>
 
                             <Controller
                                 control={control}
@@ -351,15 +330,6 @@ export const ChannelForm = ({
 
                             <Controller
                                 control={control}
-                                name="coast"
-                                rules={{ required: "Укажите стоимость" }}
-                                render={({ field }) => (
-                                    <AdminInput {...field} placeholder="Стоимость" error={errors.coast?.message} onChange={(e) => handleNumberInput(e.target.value, field.onChange)} />
-                                )}
-                            />
-
-                            <Controller
-                                control={control}
                                 name="subscribers"
                                 rules={{ required: "Укажите подписчиков" }}
                                 render={({ field }) => (
@@ -369,6 +339,15 @@ export const ChannelForm = ({
                                         error={errors.subscribers?.message}
                                         onChange={(e) => handleNumberInput(e.target.value, field.onChange)}
                                     />
+                                )}
+                            />
+
+                            <Controller
+                                control={control}
+                                name="coast"
+                                rules={{ required: "Укажите стоимость" }}
+                                render={({ field }) => (
+                                    <AdminInput {...field} placeholder="Стоимость" error={errors.coast?.message} onChange={(e) => handleNumberInput(e.target.value, field.onChange)} />
                                 )}
                             />
                         </div>

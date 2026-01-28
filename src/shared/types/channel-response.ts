@@ -42,4 +42,5 @@ export interface ChannelResponse {
         color: string;
         icon: string;
     }
+    socialType: 'telegram' | 'vk' | 'max'
 }

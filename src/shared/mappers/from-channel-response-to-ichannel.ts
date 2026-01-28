@@ -13,7 +13,8 @@ export const fromChannelResponseToIChannel = (data: ChannelResponse): IChannel =
         },
         subscribers: data.subscribers,
         price: Number(data.coast),
-        slug: data.slug
+        slug: data.slug,
+        socialType: data.socialType
     }
 }
 

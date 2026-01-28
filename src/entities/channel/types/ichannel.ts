@@ -10,4 +10,5 @@ export interface IChannel {
     subscribers: string;
     price: number;
     slug: string;
+    socialType: 'telegram' | 'vk' | 'max';
 } 
