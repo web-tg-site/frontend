@@ -38,7 +38,7 @@ export const Coverage = () => (
 
             {/* НИЖНИЙ БЛОК (Текст) */}
             <div className="pb-7.5 px-6 pt-2 flex-shrink-0">
-                <Numbers className="text-black">21+</Numbers>
+                <Numbers className="text-black">12+</Numbers>
                 <Text variant="3" className="text-black/60 leading-tight lg:max-w-[80%]">
                     Млн просмотров постов в сутки, во всех каналах (огромный охват)
                 </Text>

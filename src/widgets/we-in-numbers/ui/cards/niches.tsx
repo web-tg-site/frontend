@@ -60,7 +60,7 @@ export const Niches = () => (
                 Добавляем фоновый градиент как дополнительную защиту
             */}
             <div className="relative z-10 pb-7.5 px-8 pt-4 bg-gradient-to-t from-white via-white/80 to-transparent min-[1025px]:bg-none">
-                <Numbers className="text-black">15+</Numbers>
+                <Numbers className="text-black">20+</Numbers>
                 <Text variant="3" className="text-black/60">Ниш и индустрий</Text>
             </div>
         </WeCard>
