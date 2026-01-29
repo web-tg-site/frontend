@@ -24,7 +24,7 @@ export const OurService = () => {
 
                 <div className="flex justify-center mb-12.5">
                     <Text className="max-w-[639px] w-full text-black/60 text-center">
-                        Мы берём на себя полный цикл размещения рекламы в Telegram, ВК, MAX — от подбора каналов до выхода постов и контроля размещений.
+                        Мы берём на себя полный цикл размещения рекламы в Telegram, VK, MAX — от подбора каналов до выхода постов и контроля размещений.
                     </Text>
                 </div>
             </motion.div>

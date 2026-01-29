@@ -5,7 +5,7 @@ import { WeCard } from "../we-card";
 
 export const Cities = () => (
     <div className="col-span-1 min-[1025px]:col-span-7">
-        <WeCard className="flex flex-col min-h-[300px] overflow-hidden">
+        <WeCard className="flex flex-col min-h-[300px] overflow-hidden relative">
             
             {/* 
                 ВЕРХНИЙ БЛОК (Сетка)
@@ -40,8 +40,8 @@ export const Cities = () => (
             </div>
 
             {/* НИЖНИЙ БЛОК (Текст) */}
-            <div className="pb-7.5 px-8 pt-2 shrink-0">
-                <Numbers className="text-black">45+</Numbers>
+            <div className="pb-7.5 px-8 shrink-0 lg:absolute lg:bottom-0">
+                <Numbers className="text-black min-[1642px]:text-[100px]! min-[1280px]:text-[80px]! min-[1024px]:text-[60px]! text-[70px]!">45+</Numbers>
                 <Text variant="3" className="text-black/60">Городов присутствия</Text>
             </div>
         </WeCard>

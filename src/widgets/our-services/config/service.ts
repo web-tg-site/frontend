@@ -10,7 +10,7 @@ import {
 export const TOP_SERVICE: OurServiceCardProps[] = [
     {
         icon: DevelopmentIcon,
-        title: "Размещение рекламы в Telegram-каналах",
+        title: "Размещение рекламы в Telegram, VK и MAX",
         image: "telegram.png"
     },
     {

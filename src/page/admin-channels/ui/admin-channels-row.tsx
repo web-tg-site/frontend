@@ -22,7 +22,7 @@ export const AdminChannelsRow = ({
     // Функция для получения названия соцсети
     const getSocialName = (type: string | undefined) => {
         switch (type) {
-            case 'telegram': return 'Телеграм';
+            case 'telegram': return 'Telegram';
             case 'vk': return 'Вконтакте';
             case 'max': return 'MAX';
             default: return type || '-';

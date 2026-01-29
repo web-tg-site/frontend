@@ -17,14 +17,7 @@ import { FilterButton } from "./filter-button"
 import { FilterModal } from "./filter-modal"
 import { SOCIALS } from "../config/socials";
 import { SocialTypeButton } from "./social-type-button";
-
-const parseSubscribers = (str: string): number => {
-    if (!str) return 0;
-    const s = str.toLowerCase().replace(/,/g, '.');
-    if (s.includes("млн")) return parseFloat(s) * 1_000_000;
-    if (s.includes("к") || s.includes("k")) return parseFloat(s) * 1_000;
-    return parseFloat(s) || 0;
-};
+import { getNoun, parseSubscribers } from "../utils";
 
 export const Catalog = () => {
     const ITEMS_PER_ROW = 3;
@@ -179,7 +172,7 @@ export const Catalog = () => {
             <div className="flex flex-col mb-9">
                 <div className="flex justify-between items-center w-full">
                     <p className="text-white whitespace-nowrap shrink-0">
-                        {isCatalogLoading ? "..." : filteredChannels.length} каналов
+                        {isCatalogLoading ? "..." : filteredChannels.length} {getNoun(filteredChannels.length, 'канал', 'канала', 'каналов')} <span className="text-white/60 text-[10px]">(каталог в процессе пополнения)</span>
                     </p>
 
                     <div className="flex items-center justify-end gap-3 flex-1 min-w-0 ml-4">

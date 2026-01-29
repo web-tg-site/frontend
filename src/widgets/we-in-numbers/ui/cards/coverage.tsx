@@ -5,10 +5,10 @@ import { WeCard } from "../we-card";
 
 export const Coverage = () => (
     <div className="col-span-1 min-[1025px]:col-span-5">
-        <WeCard className="flex flex-col min-h-[300px] overflow-hidden">
+        <WeCard className="flex flex-col min-h-[300px] overflow-hidden relative">
             
             {/* ВЕРХНИЙ БЛОК (Пакеты) */}
-            <div className="relative w-full flex-grow overflow-hidden p-4 pt-8 [mask-image:linear-gradient(to_bottom,black_85%,transparent)]">
+            <div className="relative w-full flex-grow overflow-hidden p-4 pt-8 mask-[linear-gradient(to_bottom,black_85%,transparent)]">
                 <div className="grid grid-cols-4 min-[1025px]:grid-cols-6 gap-3 content-start justify-items-center w-full">
                     {BAGS_GRID.map((status, idx) => {
                          if (status === null) return <div key={idx} className="w-full aspect-square" />;
@@ -37,8 +37,8 @@ export const Coverage = () => (
             </div>
 
             {/* НИЖНИЙ БЛОК (Текст) */}
-            <div className="pb-7.5 px-6 pt-2 flex-shrink-0">
-                <Numbers className="text-black">12+</Numbers>
+            <div className="pb-7.5 px-6 shrink-0 lg:absolute lg:bottom-0">
+                <Numbers className="text-black min-[1642px]:text-[100px]! min-[1280px]:text-[80px]! min-[1024px]:text-[60px]! text-[70px]!">12+</Numbers>
                 <Text variant="3" className="text-black/60 leading-tight lg:max-w-[80%]">
                     Млн просмотров постов в сутки, во всех каналах (огромный охват)
                 </Text>
