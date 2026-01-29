@@ -1,0 +1,1 @@
+export const NUMBER_CLASSES = "lg:text-[72px] text-[50px] text-black"

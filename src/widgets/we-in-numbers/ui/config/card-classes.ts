@@ -1,0 +1,1 @@
+export const CARD_CLASSES = "flex items-center gap-6 px-2"
