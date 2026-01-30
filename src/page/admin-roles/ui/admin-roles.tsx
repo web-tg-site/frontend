@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Search } from "lucide-react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -9,6 +9,8 @@ import { AdminButton } from "@/shared/ui/admin/ui/admin-button"
 import { AdminPageTitle } from "@/shared/ui/admin/ui/admin-page-title"
 import { AdminInput } from "@/shared/ui/admin/ui/form/admin-input"
 import { AdminSelect } from "@/shared/ui/admin/ui/form/admin-select"
+import { AdminPagination, ADMIN_PAGINATION_PAGE_SIZE } from "@/shared/ui/admin/ui/admin-pagination"
+import { getPaginatedItems, getTotalPages } from "@/shared/lib/pagination"
 import { useConfirm } from "@/shared/lib/confirm-dialog"
 
 import { ROLES_OPTION } from "../config/roles-option"
@@ -29,6 +31,7 @@ export const AdminRoles = () => {
     // Стейты
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedRole, setSelectedRole] = useState<string | number | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Фильтрация
     const filteredAdmins = rawAdmins.filter((user) => {
@@ -36,6 +39,20 @@ export const AdminRoles = () => {
         const matchesRole = selectedRole ? user.role === selectedRole : true;
         return matchesSearch && matchesRole;
     });
+
+    // Постраничный вывод (клиент)
+    const totalPages = useMemo(
+        () => getTotalPages(filteredAdmins.length, ADMIN_PAGINATION_PAGE_SIZE),
+        [filteredAdmins.length]
+    );
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages >= 1) setCurrentPage(totalPages);
+    }, [totalPages, currentPage]);
+    useEffect(() => setCurrentPage(1), [searchTerm, selectedRole]);
+    const paginatedAdmins = useMemo(
+        () => getPaginatedItems(filteredAdmins, Math.min(currentPage, totalPages || 1), ADMIN_PAGINATION_PAGE_SIZE),
+        [filteredAdmins, currentPage, totalPages]
+    );
 
     // Обработчик удаления
     const handleDelete = (id: number) => {
@@ -95,11 +112,16 @@ export const AdminRoles = () => {
             </div>
 
             <AdminRolesTable 
-                items={filteredAdmins}
+                items={paginatedAdmins}
                 isLoading={adminLoading}
                 searchTerm={searchTerm}
                 onDelete={handleDelete}
                 onRoleChange={handleRoleChange}
+            />
+            <AdminPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
             />
         </div>
     )

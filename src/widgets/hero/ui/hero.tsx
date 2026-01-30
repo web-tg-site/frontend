@@ -5,12 +5,10 @@ import { LinkButton } from "@/shared/ui";
 import { Background } from "./background";
 import { TelegramPhone } from "./telegram-phone";
 import { BubblesLayer } from "./bubbles-layer";
-import { CHANNELS_DATA } from "../config";
 import { Headline } from "@/shared/ui/text";
 import { useHero } from "../api/use-hero";
 import { SOCIALS_IMAGES } from "../config/social-images";
 import Image from "next/image";
-import { cn } from "@/shared/utils";
 // 1. Импортируем motion
 import { motion } from "framer-motion";
 
@@ -18,7 +16,7 @@ import { motion } from "framer-motion";
 const MotionImage = motion(Image);
 
 export const Hero = () => {
-    const { data: hero, isLoading: heroLoading } = useHero();
+    const { data: hero } = useHero();
     const heroChannels = hero?.channels ? hero.channels : [];
     const categories = hero?.categories ? hero.categories : [];
 

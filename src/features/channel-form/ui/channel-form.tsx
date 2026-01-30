@@ -179,7 +179,7 @@ export const ChannelForm = ({
                     if (type === 'edit' && initialImageUrl) {
                         axios.post('/api/delete-image', { url: initialImageUrl }).catch(console.error);
                     }
-                } catch (error) {
+                } catch {
                     setError("image", { type: "manual", message: "Не удалось загрузить изображение" });
                     setIsLoading(false);
                     return;

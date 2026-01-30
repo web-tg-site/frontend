@@ -22,7 +22,7 @@ export const RightFooter = () => {
                         ))}
                     </div>
 
-                    <Link href='https:/t.me/Max_louj' target="_blank" className="flex items-center gap-3 cursor-pointer">
+                    <Link href='https://t.me/Max_louj' target="_blank" className="flex items-center gap-3 cursor-pointer">
                         <ML />
                         <p className="text-white/60 lg:text-[14px] text-[8px]">
                             Website by ML Agency

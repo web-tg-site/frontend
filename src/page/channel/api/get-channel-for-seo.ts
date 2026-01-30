@@ -6,7 +6,7 @@ export const getChannelForSeo = async (slug: string): Promise<ChannelResponse | 
         const { data } = await $api.get<ChannelResponse>(`/channel/${slug}`);
         
         return data;
-    } catch (error) {
+    } catch {
         return null;
     }
 }

@@ -47,23 +47,12 @@ export const AdminHero = () => {
 
     // --- ЛОГИКА REORDER ---
     const handleReorder = async (newItems: HeroChannelViewDto[]) => {
-        // 1. Сохраняем текущее состояние для возможного отката
         const previousItems = [...localItems];
-
-        // 2. Оптимистичное обновление (UI меняется мгновенно)
         setLocalItems(newItems);
-
         try {
-            // 3. Достаем только массив ID
-            const ids = newItems.map((item) => item.id);
-            
-            // 4. Отправляем запрос на сервер
-            await reorderHero(ids);
-            
+            await reorderHero(newItems.map((item) => item.id));
         } catch (error) {
             console.error("Ошибка сохранения порядка, откат изменений", error);
-            
-            // 5. ROLLBACK: Если ошибка, молча возвращаем старый список
             setLocalItems(previousItems);
         }
     };

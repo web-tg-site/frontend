@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { Trash2, Plus, Save, Loader2, X } from "lucide-react"; 
+import { Plus, Save, Loader2, X } from "lucide-react"; 
 
 import { AdminPageTitle } from "@/shared/ui/admin/ui/admin-page-title";
 import { AdminButton } from "@/shared/ui/admin/ui/admin-button";

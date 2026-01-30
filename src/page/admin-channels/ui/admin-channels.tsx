@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search } from "lucide-react";
 
 import { AdminPageTitle } from "@/shared/ui/admin/ui/admin-page-title";
 import { AdminChannelsProps } from "../types/admin-channels.props";
 import { AdminInput } from "@/shared/ui/admin/ui/form/admin-input";
 import { AdminSelect } from "@/shared/ui/admin/ui/form/admin-select";
+import { AdminPagination, ADMIN_PAGINATION_PAGE_SIZE } from "@/shared/ui/admin/ui/admin-pagination";
+import { getPaginatedItems, getTotalPages } from "@/shared/lib/pagination";
 import { SUBSCRIBERS } from "../config/subscribers";
 import { useAdminCategories } from "../api/use-admin-category";
 import { useAdminChannels } from "../api/use-admin-channels";
@@ -36,6 +38,7 @@ export const AdminChannels = ({
     const [selectedCategory, setSelectedCategory] = useState<string | number | null>(null);
     const [selectedSubscribers, setSelectedSubscribers] = useState<string | number | null>(null);
     const [selectedSocial, setSelectedSocial] = useState<string | number | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Загрузка данных категорий
     const { data: categoryData, isLoading: categoryLoading } = useAdminCategories();
@@ -86,6 +89,22 @@ export const AdminChannels = ({
 
         return matchesSearch && matchesCategory && matchesSubscribers && matchesSocial;
     });
+
+    // Постраничный вывод (клиент)
+    const totalPages = useMemo(
+        () => getTotalPages(filteredChannels.length, ADMIN_PAGINATION_PAGE_SIZE),
+        [filteredChannels.length]
+    );
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages >= 1) setCurrentPage(totalPages);
+    }, [totalPages, currentPage]);
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, selectedCategory, selectedSubscribers, selectedSocial]);
+    const paginatedChannels = useMemo(
+        () => getPaginatedItems(filteredChannels, Math.min(currentPage, totalPages || 1), ADMIN_PAGINATION_PAGE_SIZE),
+        [filteredChannels, currentPage, totalPages]
+    );
 
     // Функция-обработчик клика на иконку корзины
     const handleDeleteClick = (id: number | string) => {
@@ -167,12 +186,17 @@ export const AdminChannels = ({
 
             {/* Таблица */}
             <AdminChannelsTable 
-                items={filteredChannels} 
+                items={paginatedChannels} 
                 isLoading={channelLoading}
                 searchTerm={searchTerm}
                 withActions={isEditable}
                 onDelete={handleDeleteClick}
                 onEdit={(id) => router.push(`/admin/channels/edit/${id}`)}
+            />
+            <AdminPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
             />
         </div>
     )

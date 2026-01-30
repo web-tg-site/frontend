@@ -70,7 +70,7 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
             reset()
 
             setTimeout(() => setIsSuccess(false), 5000)
-        } catch (error) {
+        } catch {
             setError("root", {
                 message: "Не удалось отправить заявку. Попробуйте позже или свяжитесь с нами другим способом.",
             })

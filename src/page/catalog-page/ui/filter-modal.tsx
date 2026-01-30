@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion, Variants } from "framer-motion"
 import { cn } from "@/shared/utils"
 import { SUBSCRIBER_RANGES } from "../config/filter-options"
@@ -11,18 +11,6 @@ const ChevronLeft = () => (
         <path d="m15 18-6-6 6-6" />
     </svg>
 )
-
-const useMediaQuery = (query: string) => {
-    const [matches, setMatches] = useState(false)
-    useEffect(() => {
-        const m = window.matchMedia(query)
-        setMatches(m.matches)
-        const onChange = () => setMatches(m.matches)
-        m.addEventListener("change", onChange)
-        return () => m.removeEventListener("change", onChange)
-    }, [query])
-    return matches
-}
 
 interface FilterModalProps {
     initialCategories: string[]
@@ -41,7 +29,6 @@ export const FilterModal = ({
 }: FilterModalProps) => {
     const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategories)
     const [selectedRangeIndex, setSelectedRangeIndex] = useState<number>(initialSubscriberRangeIndex)
-    const isDesktop = useMediaQuery("(min-width: 1025px)")
 
     const toggleCategory = (category: string) => {
         setSelectedCategories(prev =>

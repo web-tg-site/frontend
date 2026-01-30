@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -9,6 +9,8 @@ import { AdminPageTitle } from "@/shared/ui/admin/ui/admin-page-title"
 import { AdminInput } from "@/shared/ui/admin/ui/form/admin-input"
 import { AdminSelect } from "@/shared/ui/admin/ui/form/admin-select"
 import { AdminButton } from "@/shared/ui/admin/ui/admin-button"
+import { AdminPagination, ADMIN_PAGINATION_PAGE_SIZE } from "@/shared/ui/admin/ui/admin-pagination"
+import { getPaginatedItems, getTotalPages } from "@/shared/lib/pagination"
 
 // Features
 import { STATUS_OPTIONS } from "../config/status-options"
@@ -21,6 +23,7 @@ export const AdminPersonalSelection = () => {
     // Состояния
     const [searchTerm, setSearchTerm] = useState("");
     const [status, setStatus] = useState<string | number | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Загрузка данных
     const { data: personalSelect, isLoading: personalSelectLoading } = usePersonalSelectionTable();
@@ -35,6 +38,20 @@ export const AdminPersonalSelection = () => {
 
         return matchesSearch && matchesStatus;
     }) || [];
+
+    // Постраничный вывод (клиент)
+    const totalPages = useMemo(
+        () => getTotalPages(filteredItems.length, ADMIN_PAGINATION_PAGE_SIZE),
+        [filteredItems.length]
+    );
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages >= 1) setCurrentPage(totalPages);
+    }, [totalPages, currentPage]);
+    useEffect(() => setCurrentPage(1), [searchTerm, status]);
+    const paginatedItems = useMemo(
+        () => getPaginatedItems(filteredItems, Math.min(currentPage, totalPages || 1), ADMIN_PAGINATION_PAGE_SIZE),
+        [filteredItems, currentPage, totalPages]
+    );
 
     // Обработчики
     const handleCreate = () => {
@@ -82,11 +99,16 @@ export const AdminPersonalSelection = () => {
 
             {/* Таблица */}
             <AdminSelectionTable 
-                items={filteredItems}
+                items={paginatedItems}
                 isLoading={personalSelectLoading}
                 searchTerm={searchTerm}
                 onEdit={handleEdit}
                 onCopyLink={handleCopyLink}
+            />
+            <AdminPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
             />
         </div>
     )
