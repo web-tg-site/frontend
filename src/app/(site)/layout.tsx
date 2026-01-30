@@ -71,12 +71,21 @@ export const metadata: Metadata = {
         type: "website",
         images: [
             {
-                url: "/android-chrome-512x512.png", 
+                url: "/android-chrome-512x512.png",
                 width: 512,
                 height: 512,
                 alt: "Sway Logo",
             },
         ],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Sway",
+        description: "Сервис по продаже рекламы в Telegram, VK, MAX и создание подборок.",
+        images: ["/android-chrome-512x512.png"],
+    },
+    alternates: {
+        canonical: DOMAIN,
     },
     icons: {
         icon: [

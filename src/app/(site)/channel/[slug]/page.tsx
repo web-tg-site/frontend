@@ -19,12 +19,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         }
     }
 
+    const baseUrl = 'https://swaymedia.ru';
+    const canonical = `${baseUrl}/channel/${slug}`;
+
     return {
         title: channel.name,
         description: channel.description || DEFAULT_SEO.description,
         openGraph: {
             title: channel.name,
             description: channel.description || DEFAULT_SEO.description,
+            url: canonical,
             images: [
                 {
                     url: channel.image || '',
@@ -34,6 +38,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
                 }
             ],
             type: 'article',
+        },
+        alternates: {
+            canonical,
         },
     }
 }
