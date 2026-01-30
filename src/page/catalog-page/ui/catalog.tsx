@@ -13,6 +13,7 @@ import 'swiper/css/free-mode';
 import { Headline, LinkButton, Text } from "@/shared/ui"
 import { ChannelCard } from "@/entities/channel"
 import { SUBSCRIBER_RANGES } from "../config/filter-options"
+import { BATCH_SIZE, SKELETON_COUNT } from "../config/catalog-config"
 import { FilterButton } from "./filter-button"
 import { FilterModal } from "./filter-modal"
 import { SOCIALS } from "../config/socials";
@@ -20,11 +21,6 @@ import { SocialTypeButton } from "./social-type-button";
 import { getNoun, parseSubscribers } from "../utils";
 
 export const Catalog = () => {
-    const ITEMS_PER_ROW = 3;
-    const ROWS_TO_LOAD = 7;
-    const BATCH_SIZE = ITEMS_PER_ROW * ROWS_TO_LOAD;
-    const SKELETON_COUNT = 6;
-
     const { data, isLoading: isCatalogLoading } = useCatalog();
     
     const channels = data?.ichannels ?? [];
@@ -171,8 +167,13 @@ export const Catalog = () => {
 
             <div className="flex flex-col mb-9">
                 <div className="flex justify-between items-center w-full">
-                    <p className="text-white whitespace-nowrap shrink-0">
-                        {isCatalogLoading ? "..." : filteredChannels.length} {getNoun(filteredChannels.length, 'канал', 'канала', 'каналов')} <span className="text-white/60 text-[10px]">(каталог в процессе пополнения)</span>
+                    <p className="text-white shrink-0 whitespace-nowrap md:whitespace-nowrap flex flex-col md:flex-row md:items-center">
+                        <span>
+                            {isCatalogLoading ? "..." : filteredChannels.length} {getNoun(filteredChannels.length, 'канал', 'канала', 'каналов')}
+                        </span>
+                        <span className="text-white/60 text-[10px] md:ml-1 block md:inline">
+                            (каталог в процессе пополнения)
+                        </span>
                     </p>
 
                     <div className="flex items-center justify-end gap-3 flex-1 min-w-0 ml-4">

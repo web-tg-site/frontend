@@ -71,7 +71,9 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
 
             setTimeout(() => setIsSuccess(false), 5000)
         } catch (error) {
-            console.error(error)
+            setError("root", {
+                message: "Не удалось отправить заявку. Попробуйте позже или свяжитесь с нами другим способом.",
+            })
         } finally {
             setIsLoading(false)
         }
@@ -223,7 +225,7 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
                                 </Link>
                             </Checkbox>
 
-                            <div className="text-[10px] text-white/50 mb-4 eading-tight">
+                            <div className="text-[10px] text-white/50 mb-4 leading-tight">
                                 This site is protected by reCAPTCHA and the Google{' '}
                                 <a href="https://policies.google.com/privacy" className="underline hover:text-white" target="_blank" rel="noreferrer">Privacy Policy</a> and{' '}
                                 <a href="https://policies.google.com/terms" className="underline hover:text-white" target="_blank" rel="noreferrer">Terms of Service</a> apply.
