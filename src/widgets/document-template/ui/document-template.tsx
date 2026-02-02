@@ -10,7 +10,7 @@ export const DocumentTemplate = ({
 }: DocumentTemplateProps) => {
     return (
         <div className="min-h-screen pt-[72px] pb-4 md:pt-24 md:pb-16 overflow-x-hidden">
-            <Headline variant="h2" className="px-5 mb-[53px]">
+            <Headline variant="h2" className="px-5 mb-[53px] min-[1280px]:text-[110px] min-[1024px]:text-[80px] min-[500px]:text-[50px] text-[30px] wrap-break-word">
                 {title}
             </Headline>
             <WhiteBlockTemplate className={className}>
