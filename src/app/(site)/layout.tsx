@@ -5,6 +5,7 @@ import { Header } from "@/widgets/header";
 import { Footer } from "@/widgets/footer";
 import { GlobalCollectionModal } from "@/features/modal-collection/ui/global-collection-modal";
 import { QueryProvider, YandexMetrika } from "@/shared/providers";
+import { CookieBanner } from "@/widgets/cookie-banner";
 import { Suspense } from "react";
 
 const onest = Onest({
@@ -120,6 +121,7 @@ export default function RootLayout({
                     <Footer />
 
                     <GlobalCollectionModal />
+                    <CookieBanner />
                 </QueryProvider>
                 
                 <script
