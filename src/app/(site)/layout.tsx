@@ -23,7 +23,7 @@ const DOMAIN = "https://swaymedia.ru";
 
 export const metadata: Metadata = {
     metadataBase: new URL(DOMAIN),
-    title: "Sway",
+    title: "Sway Media",
     description: "Сервис по продаже рекламы в Telegram, ВКонтакте и MAX. Возможность создавать свои подборки каналов и заказ персональной подборки под задачи вашего бизнеса.",
     keywords: [
         // Telegram
@@ -64,10 +64,10 @@ export const metadata: Metadata = {
         "закупка рекламы",
     ],
     openGraph: {
-        title: "Sway",
+        title: "Sway Media",
         description: "Сервис по продаже рекламы в Telegram, VK, MAX и создание подборок.",
         url: DOMAIN,
-        siteName: "Sway",
+        siteName: "Sway Media",
         locale: "ru_RU",
         type: "website",
         images: [
@@ -75,13 +75,13 @@ export const metadata: Metadata = {
                 url: "/android-chrome-512x512.png",
                 width: 512,
                 height: 512,
-                alt: "Sway Logo",
+                alt: "Sway Media Logo",
             },
         ],
     },
     twitter: {
         card: "summary_large_image",
-        title: "Sway",
+        title: "Sway Media",
         description: "Сервис по продаже рекламы в Telegram, VK, MAX и создание подборок.",
         images: ["/android-chrome-512x512.png"],
     },
@@ -130,7 +130,7 @@ export default function RootLayout({
                         __html: JSON.stringify({
                             "@context": "https://schema.org",
                             "@type": "Organization",
-                            name: "Sway",
+                            name: "Sway Media",
                             url: DOMAIN,
                             logo: `${DOMAIN}/android-chrome-512x512.png`,
                             description: "Биржа рекламы в Telegram, VK, MAX",
