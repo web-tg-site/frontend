@@ -6,7 +6,7 @@ import { CollectionButton } from "./collection-button";
 export const Header = () => {
     return (
         <header className="fixed top-0 w-full flex justify-between items-center pt-4 pr-2.5 pl-4.5 z-99">
-            <Link href='/' className="cursor-pointer">
+            <Link href='/' className="cursor-pointer max-w-[115px] h-full">
                 <Image 
                     src='/logo.svg'
                     alt='Логотип'
