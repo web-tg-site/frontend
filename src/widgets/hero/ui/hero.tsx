@@ -9,16 +9,14 @@ import { Headline } from "@/shared/ui/text";
 import { useHero } from "../api/use-hero";
 import { SOCIALS_IMAGES } from "../config/social-images";
 import Image from "next/image";
-// 1. Импортируем motion
 import { motion } from "framer-motion";
 
-// 2. Создаем анимированную версию Next Image
 const MotionImage = motion(Image);
 
 export const Hero = () => {
     const { data: hero } = useHero();
     const heroChannels = hero?.channels ? hero.channels : [];
-    const categories = hero?.categories ? hero.categories : [];
+    const categories = hero?.categories ? hero.categories.slice(0, 15) : [];
 
     const [heroHeight, setHeroHeight] = useState<string | number>("100vh");
 

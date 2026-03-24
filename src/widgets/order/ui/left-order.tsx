@@ -35,7 +35,7 @@ export const LeftOrder = () => {
                 className="absolute inset-0 w-full h-full z-0 pointer-events-none"
                 style={{ touchAction: 'pan-y' }} 
             >
-                {categories.map((tag) => (
+                {categories.slice(0, 15).map((tag) => (
                     <div
                         key={tag.id}
                         ref={(el) => {
