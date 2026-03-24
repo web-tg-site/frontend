@@ -6,7 +6,7 @@ export const Geography = () => {
     return (
         <LandingBlock className="px-7.5 pt-10 lg:pb-[77px] pb-[38px] mb-2.5">
             <div className="mb-8">
-                <Headline variant="h4" className="text-black text-[40px] lg:text-[70px] leading-none">
+                <Headline variant="h4" className="text-black text-[40px] lg:mb-0 mb-3.5 lg:text-[70px] leading-none">
                     География охватов<br/> SWAY по всей России
                 </Headline>
 

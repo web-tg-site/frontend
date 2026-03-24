@@ -13,7 +13,7 @@ export const LeftOrder = () => {
 
     const { data: categories = [] } = useCategories();
 
-    const { isReady } = useMatterPhysics(sceneRef, categories, bubbleElements);
+    const { isReady } = useMatterPhysics(sceneRef, categories.slice(0, 15), bubbleElements);
 
     return (
         <div className="bg-primary rounded-2xl min-h-[500px] lg:min-h-[785px] h-full relative overflow-hidden flex flex-col select-none">
