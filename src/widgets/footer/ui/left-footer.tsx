@@ -1,4 +1,4 @@
-import { Title } from "@/shared/ui/text"
+import { Text, Title } from "@/shared/ui/text"
 import { LINKS } from "../config"
 import { FooterLink } from "./footer-link"
 import { SOCIALS } from "../config"
@@ -8,9 +8,14 @@ export const LeftFooter = () => {
     return (
         <div className="flex flex-col h-full py-[25px] pl-6.5 pr-10 bg-secondary rounded-2xl lg:col-span-4">
             <div className="lg:mb-0 mb-5">
-                <Title variant="h3" className="text-[24px]!">
+                <Title variant="h3" className="text-[24px]! mb-3">
                     Навигация
                 </Title>
+
+                <Text variant="4" className="leading-6">
+                    ИП Черных Наталья Витальевна <br/>
+                    ОГРНИП:  325665800042387
+                </Text>
             </div>
 
             <div className="flex justify-between items-end lg: mt-auto">
