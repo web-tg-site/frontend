@@ -37,6 +37,8 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
             telegram: "",
             comment: "",
             isAgreed: false,
+            isCookieAndMetricsAgreed: false,
+            isPersonalDataAgreed: false,
         }
     })
 
@@ -210,7 +212,7 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
                             </div>
 
                             <Checkbox
-                                className="mb-10"
+                                className="mb-3"
                                 error={errors.isAgreed?.message}
                                 {...register("isAgreed", {
                                     required: "Необходимо согласие на обработку данных",
@@ -222,6 +224,38 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
                                     className="transition hover:underline underline-offset-4"
                                 >
                                     Политикой конфиденциальности сайта
+                                </Link>
+                            </Checkbox>
+
+                            <Checkbox
+                                className="mb-3"
+                                error={errors.isCookieAndMetricsAgreed?.message}
+                                {...register("isCookieAndMetricsAgreed", {
+                                    required: "Необходимо согласие на обработку cookie и метрики",
+                                })}
+                            >
+                                Я ознакомился и согласен с{" "}
+                                <Link
+                                    href="/cookie-consent"
+                                    className="transition hover:underline underline-offset-4"
+                                >
+                                    Политикой использования cookie и метрики
+                                </Link>
+                            </Checkbox>
+
+                            <Checkbox
+                                className="mb-10"
+                                error={errors.isPersonalDataAgreed?.message}
+                                {...register("isPersonalDataAgreed", {
+                                    required: "Необходимо согласие на обработку персональных данных",
+                                })}
+                            >
+                                Я ознакомился и согласен с{" "}
+                                <Link
+                                    href="/personal-data-consent"
+                                    className="transition hover:underline underline-offset-4"
+                                >
+                                    Политикой обработки персональных данных
                                 </Link>
                             </Checkbox>
 

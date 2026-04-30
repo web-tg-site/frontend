@@ -4,4 +4,6 @@ export interface SendApplicationFormData {
     telegram: string;
     comment: string;
     isAgreed?: boolean;
+    isCookieAndMetricsAgreed?: boolean;
+    isPersonalDataAgreed?: boolean;
 }
