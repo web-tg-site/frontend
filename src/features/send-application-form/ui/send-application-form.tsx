@@ -218,7 +218,7 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
                             >
                                 Я ознакомился и согласен с{" "}
                                 <Link
-                                    href="/policy"
+                                    href="/privacy-policy"
                                     className="transition hover:underline underline-offset-4"
                                 >
                                     Политикой конфиденциальности сайта
