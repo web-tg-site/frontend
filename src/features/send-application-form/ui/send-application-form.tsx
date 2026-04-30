@@ -37,7 +37,6 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
             telegram: "",
             comment: "",
             isAgreed: false,
-            isCookieAndMetricsAgreed: false,
             isPersonalDataAgreed: false,
         }
     })
@@ -218,28 +217,12 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
                                     required: "Необходимо согласие на обработку данных",
                                 })}
                             >
-                                Я ознакомился и согласен с{" "}
+                                Я ознакомлен(а) с {" "}
                                 <Link
                                     href="/privacy-policy"
                                     className="transition hover:underline underline-offset-4"
                                 >
-                                    Политикой конфиденциальности сайта
-                                </Link>
-                            </Checkbox>
-
-                            <Checkbox
-                                className="mb-3"
-                                error={errors.isCookieAndMetricsAgreed?.message}
-                                {...register("isCookieAndMetricsAgreed", {
-                                    required: "Необходимо согласие на обработку cookie и метрики",
-                                })}
-                            >
-                                Я ознакомился и согласен с{" "}
-                                <Link
-                                    href="/cookie-consent"
-                                    className="transition hover:underline underline-offset-4"
-                                >
-                                    Политикой использования cookie и метрики
+                                    Политикой обработки персональных данных
                                 </Link>
                             </Checkbox>
 
@@ -250,12 +233,12 @@ const SendApplicationFormContent = ({ className = "" }: SendApplicationFormProps
                                     required: "Необходимо согласие на обработку персональных данных",
                                 })}
                             >
-                                Я ознакомился и согласен с{" "}
+                                Я даю согласие на {" "}
                                 <Link
                                     href="/personal-data-consent"
                                     className="transition hover:underline underline-offset-4"
                                 >
-                                    Политикой обработки персональных данных
+                                    обработку персональных данных на условиях Политики
                                 </Link>
                             </Checkbox>
 

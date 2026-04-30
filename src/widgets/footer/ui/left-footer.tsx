@@ -16,6 +16,11 @@ export const LeftFooter = () => {
                     ИП Черных Наталья Витальевна <br/>
                     ОГРНИП:  325665800042387
                 </Text>
+
+                <Text variant="4" className="leading-6 mb-3">
+                    Уведомление в Роскомнадзор об обработке персональных данных: <br/>
+                    Регистр. номер 66-25-057009
+                </Text>
             </div>
 
             <div className="flex justify-between items-end lg: mt-auto">
