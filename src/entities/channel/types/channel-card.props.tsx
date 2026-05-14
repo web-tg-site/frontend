@@ -7,4 +7,5 @@ export interface ChannelCardProps extends IChannel {
     onAdminClick?: (id: number) => void;
     isSelected?: boolean;
     buttonAction?: 'add' | 'delete'; 
+    minCard?: boolean;
 }

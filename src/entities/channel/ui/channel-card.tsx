@@ -23,7 +23,8 @@ export const ChannelCard = ({
     buttonAction = 'add',
     slug,
     socialType,
-    onAdminClick
+    onAdminClick,
+    minCard = false
 }: ChannelCardProps) => {
     const openModal = useCollections((state) => state.openModal);
 
@@ -72,7 +73,7 @@ export const ChannelCard = ({
 
     const cardContent = (
         <>
-            <div className="flex items-center mb-[21px]">
+            <div className={cn("flex items-center", minCard ? "" : "mb-[21px]")}>
                 <div className="relative">
                     <Image 
                         width={100}
@@ -96,7 +97,7 @@ export const ChannelCard = ({
                         {name}
                     </p>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className={cn("items-center gap-1.5", minCard ? "hidden" : "flex")}>
                         <span 
                             style={{ backgroundColor: category.color }}
                             className="lg:w-[9px] w-1.5 lg:h-[9px] h-1.5 rounded-full shrink-0"
@@ -130,7 +131,7 @@ export const ChannelCard = ({
                 )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className={cn("grid-cols-2 gap-3", minCard ? "hidden" : "grid")}>
                 <BottomCard 
                     topText={subscribers}
                     bottomText="Подписчиков"

@@ -10,7 +10,7 @@ import { FreeMode, Mousewheel } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/free-mode';
 
-import { Headline, LinkButton, Text } from "@/shared/ui"
+import { Headline, LinkButton, Switch, Text } from "@/shared/ui"
 import { ChannelCard } from "@/entities/channel"
 import { SUBSCRIBER_RANGES } from "../config/filter-options"
 import { BATCH_SIZE, SKELETON_COUNT } from "../config/catalog-config"
@@ -30,6 +30,8 @@ export const Catalog = () => {
     const [filterCategories, setFilterCategories] = useState<string[]>([]);
     const [filterRangeIndex, setFilterRangeIndex] = useState<number>(0);
     const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
+
+    const [minCard, setMinCard] = useState<boolean>(false);
     
     const [selectedSocial, setSelectedSocial] = useState<string>('all');
     
@@ -129,7 +131,7 @@ export const Catalog = () => {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 mb-15">
                 {currentChannels.map((channel: any, idx: number) => (
-                    <ChannelCard key={channel.id || idx} {...channel} />
+                    <ChannelCard key={channel.id || idx} {...channel} minCard={minCard} />
                 ))}
             </div>
         );
@@ -199,7 +201,13 @@ export const Catalog = () => {
                             </div>
                         )}
 
-                        <div className="relative shrink-0">
+                        <div className="relative shrink-0 flex items-center gap-4">
+                            <Switch 
+                                checked={minCard}
+                                onClick={setMinCard}
+                                placeholder="Сокращенный формат"
+                                className="lg:inline-flex hidden"
+                            />
                             <FilterButton 
                                 disabled={isCatalogLoading}
                                 isActive={isFilterOpen || filterCategories.length > 0 || filterRangeIndex !== 0}
@@ -239,6 +247,15 @@ export const Catalog = () => {
                         ))}
                     </div>
                 )}
+
+                <div className="mt-5.5 lg:hidden flex justify-end">
+                    <Switch
+                        checked={minCard}
+                        onClick={setMinCard}
+                        placeholder="Сокращенный формат"
+                        className="inline-flex"
+                    />
+                </div>
             </div>
 
             {renderGridContent()}
