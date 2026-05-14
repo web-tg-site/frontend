@@ -80,7 +80,7 @@ export const ChannelCard = ({
                         height={100}
                         src={image}
                         alt={name}
-                        className="w-[100px] h-[100px] object-cover rounded-[20px] mr-5 shrink-0 transition-opacity duration-300 group-hover:opacity-90 bg-gray-800"
+                        className={cn("object-cover rounded-[20px] mr-5 shrink-0 transition-opacity duration-300 group-hover:opacity-90 bg-gray-800", minCard ? "w-[80px] h-[80px]" : "w-[100px] h-[100px]")}
                     />
 
                     <SocialIcon 
